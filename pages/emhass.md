@@ -27,6 +27,7 @@ The critical variables to configure are at the very top.
 ```yaml
 {% raw %}sequence:
   - variables:
+      cost_fun: profit
       maximum_power_from_grid: 15000
       maximum_power_to_grid: 10000
       inverter_ac_output_max: 30000
@@ -144,7 +145,7 @@ The critical variables to configure are at the very top.
         {{ ns.output }}
       payload: |-
         {
-          "cost_fun": "profit",
+          "cost_fun": "{{ cost_fun }}",
           "prediction_horizon": {{ num_forecasts }},
           "optimization_time_step": {{ optimization_time_step }},
           "set_use_pv": true,
