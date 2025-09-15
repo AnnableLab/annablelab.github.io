@@ -7,13 +7,17 @@ title: Step-by-step Setup
 
 ### Configuration
 
-Unfortunately, EMHASS has a long and confusing configuration page, many of which are not actually required.
+Unfortunately, EMHASS has a long and confusing configuration page, many of which are not actually
+required.
 
-Thankfully we can completely ignore the configuration page, so just leave it default. We will be overriding the values we care about later. If you have already configured things, don't worry, it won't matter.
+Thankfully we can completely ignore the EMHASS configuration page, so just leave it as default. We
+will be overriding the values we care about later when running EMHASS. If you have already
+configured things, don't worry, it won't matter.
 
 ### Running EMHASS from Home Assistant
 
-Since EMHASS is an addon, in order for home assistant to we need a communication system. The simplest way is to use rest commands.
+Since EMHASS is an addon, we need a communication system to run commands. One simple way is to use
+rest commands which we will setup below.
 
 You'll need access to your home assistant configuration files, I recommend the official [vscode addon](https://github.com/hassio-addons/addon-vscode).
 
