@@ -141,7 +141,7 @@ You will also want an automation to automatically handle negative prices. This a
 description: "Automatically manage negative energy prices by curtailing exporting and solar generation"
 variables:
   max_export_kw: 30
-  max_import_kw: 30
+  max_pv_kw: 100
 triggers:
   - trigger: numeric_state
     entity_id:
@@ -211,10 +211,10 @@ actions:
       - action: number.set_value
         metadata: {}
         data:
-          value: "{{ max_import_kw }}"
+          value: "{{ max_pv_kw }}"
         target:
           entity_id: number.sigen_plant_pv_max_power_limit
-        alias: Set PV limit to 100
+        alias: Set PV limit to Maximum
 mode: single
 {% endraw %}
 ```
