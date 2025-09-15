@@ -48,6 +48,8 @@ The critical variables to configure are at the very top.
         charging_power: sensor.sigen_plant_ess_rated_charging_power
         discharging_power: sensor.sigen_plant_ess_rated_discharging_power
         battery_soc: sensor.sigen_plant_battery_state_of_charge
+        consumed_power: sensor.sigen_plant_consumed_power
+        pv_power: sensor.sigen_plant_sigen_pv_power
         solar:
           day1: sensor.solcast_pv_forecast_forecast_today
           day2: sensor.solcast_pv_forecast_forecast_tomorrow
@@ -68,7 +70,7 @@ The critical variables to configure are at the very top.
     data:
       start_time: "{{ start_time }}"
       end_time: "{{ end_time }}"
-      statistic_ids: sensor.sigen_plant_consumed_power
+      statistic_ids: "{{ sensors.consumed_power }}"
       period: hour
       types: mean
     response_variable: history
@@ -79,9 +81,9 @@ The critical variables to configure are at the very top.
       soc_final: "{{ battery_minimum_state_of_charge_pct / 100 }}"
       load_history: |-
         {% set ns = namespace(
-          input=history.statistics['sensor.sigen_plant_consumed_power'],
+          input=history.statistics[sensors.consumed_power],
           output={
-            now().isoformat(): (states('sensor.sigen_plant_consumed_power') | float(0) * 1000) | round(0)
+            now().isoformat(): (states(sensors.consumed_power) | float(0) * 1000) | round(0)
           }
         ) %}
         {% for load in ns.input %}
@@ -96,7 +98,7 @@ The critical variables to configure are at the very top.
               state_attr('sensor.home_general_forecast', 'forecasts') | list
           ) | selectattr('per_kwh', 'is_number') | list,
           output={
-            now().isoformat(): states('sensor.amber_5min_current_general_price') | float(0)
+            now().isoformat(): states('sensor.home_general_price') | float(0)
           }
         ) %}
         {% for day in range(num_prediction_days) %}
@@ -113,7 +115,7 @@ The critical variables to configure are at the very top.
               state_attr('sensor.home_feed_in_forecast', 'forecasts') | list
           ) | selectattr('per_kwh', 'number') | list,
           output={
-            now().isoformat(): states('sensor.home_feed_in_forecast') | float(0)
+            now().isoformat(): states('sensor.home_feed_in_price') | float(0)
           }
         ) %}
         {% for day in range(num_prediction_days) %}
@@ -131,7 +133,7 @@ The critical variables to configure are at the very top.
             | selectattr('period_start','>', now())
             | selectattr('period_start','<=', now() + timedelta(days=num_prediction_days)),
           output={
-            now().isoformat(): (states('sensor.sigen_plant_sigen_pv_power') | float(0) * 1000) | round
+            now().isoformat(): (states(sensors.pv_power) | float(0) * 1000) | round
           }
         ) %}
         {% for solar in ns.input %}
@@ -243,6 +245,8 @@ The critical variables to configure are at the very top.
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
 description: "Runs EMHASS MPC optimizer, generating an optimal energy plan"
+
+
 {% endraw %}
 ```
 
