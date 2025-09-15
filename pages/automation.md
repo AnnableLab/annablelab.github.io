@@ -163,6 +163,12 @@ triggers:
       - sensor.home_general_price
     below: 0
     id: negative_price
+  - trigger: state
+    entity_id:
+      - sensor.sigen_plant_grid_connection_status
+    from: null
+    to: null
+    id: grid_connection_change
 actions:
   - alias: Curtail if feedin price is negative
     if:
@@ -190,6 +196,9 @@ actions:
       - condition: numeric_state
         entity_id: sensor.home_general_price
         below: 0
+      - condition: state
+        entity_id: sensor.sigen_plant_grid_connection_status
+        state: On Grid
     then:
       - action: number.set_value
         metadata: {}
