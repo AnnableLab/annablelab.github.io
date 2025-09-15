@@ -1,29 +1,28 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    {%- seo -%}
-    <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {%- seo -%}
+  <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
 
 </head>
-  <body>
-    <header class="site-header">
-      <div class="wrap">
-        <h1 class="site-title"><a href="{{ "/" | relative_url }}">{{ site.title }}</a></h1>
-        <p class="site-description">{{ site.description }}</p>
-        <nav class="site-nav">
-          <ul>
-          {%- for item in site.nav -%}
-            <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
-          {%- endfor -%}
-          </ul>
-
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <h1 class="site-title"><a href="{{ "/" | relative_url }}">{{ site.title }}</a></h1>
+    <p class="site-description">{{ site.description }}</p>
+    <nav class="site-nav">
+      <ul>
+        {%- for item in site.nav -%}
+        <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+        {%- endfor -%}
+      </ul>
     </nav>
-      </div>
-    </header>
-    <main class="wrap content">
-      {{ content }}
-    </main>
-  </body>
+  </div>
+</header>
+<main class="wrap content">
+  {{ content }}
+</main>
+</body>
 </html>
