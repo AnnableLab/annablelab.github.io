@@ -179,6 +179,7 @@ The critical variables to configure are at the very top.
       payload: |-
         {
           "optimization_time_step": 5,
+          "number_of_deferrable_loads": 0,
           "custom_pv_forecast_id": {
             "entity_id": "sensor.{{ sensor_prefix }}pv_power",
             "unit_of_measurement": "W",
