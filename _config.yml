@@ -1,0 +1,33 @@
+title: Sigenergy with Home Assistant and EMHASS
+description: Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.
+baseurl: ""
+url: "https://sigenergy.annable.me"
+theme: minima
+minima:
+  skin: auto
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+plugins:
+  - jekyll-sitemap
+  - jekyll-feed
+  - jekyll-seo-tag
+nav:
+  - title: "Home"
+    url: /
+  - title: "Architecture"
+    url: /pages/architecture.html
+  - title: "Prerequisites"
+    url: /pages/prerequisites.html
+  - title: "EMHASS Setup"
+    url: /pages/setup.html
+  - title: "Running EMHASS"
+    url: /pages/emhass.html
+  - title: "Dashboard"
+    url: /pages/dashboard.html
+  - title: "Battery Automation"
+    url: /pages/automation.html
+highlighter: rouge
+rouge:
+  theme: monokai
