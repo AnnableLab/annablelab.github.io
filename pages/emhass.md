@@ -50,7 +50,7 @@ The critical variables to configure are at the very top.
         discharging_power: sensor.sigen_plant_ess_rated_discharging_power
         battery_soc: sensor.sigen_plant_battery_state_of_charge
         consumed_power: sensor.sigen_plant_consumed_power
-        pv_power: sensor.sigen_plant_sigen_pv_power
+        pv_power: sensor.sigen_plant_pv_power
         solar:
           day1: sensor.solcast_pv_forecast_forecast_today
           day2: sensor.solcast_pv_forecast_forecast_tomorrow
