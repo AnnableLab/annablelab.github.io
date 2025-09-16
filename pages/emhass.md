@@ -143,8 +143,7 @@ The critical variables to configure are at the very top.
           {% set ns.output = ns.output | combine({ key: value }) %}
         {% endfor %}
         {{ ns.output }}
-      payload: |-
-        {
+      payload_common: |-
           "cost_fun": "{{ cost_fun }}",
           "prediction_horizon": {{ num_forecasts }},
           "optimization_time_step": {{ optimization_time_step }},
@@ -152,7 +151,10 @@ The critical variables to configure are at the very top.
           "set_use_battery": true,
           "inverter_is_hybrid": true,
           "number_of_deferrable_loads": 0,
-          "set_nodischarge_to_grid": false,
+          "set_nodischarge_to_grid": false
+      payload: |-
+        {
+          {{ payload_common }},
           "load_power_forecast": {{ load_history | to_json }},
           "load_cost_forecast": {{ load_cost | to_json }},
           "prod_price_forecast": {{ prod_price | to_json }},
@@ -179,11 +181,7 @@ The critical variables to configure are at the very top.
   - variables:
       payload: |-
         {
-          "optimization_time_step": 5,
-          "set_use_pv": true,
-          "set_use_battery": true,
-          "inverter_is_hybrid": true,
-          "number_of_deferrable_loads": 0,
+          {{ payload_common }},
           "custom_pv_forecast_id": {
             "entity_id": "sensor.{{ sensor_prefix }}pv_power",
             "unit_of_measurement": "W",
