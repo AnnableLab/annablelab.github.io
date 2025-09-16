@@ -39,7 +39,7 @@ The critical variables to configure are at the very top.
       optimization_time_step: 5
       weight_battery_charge: 0.02
       weight_battery_discharge: 0.02
-      load_prediction_delta: 7
+      load_prediction_delta: 1
       sensor_prefix: mpc_
       sensor_name_prefix: "MPC "
     alias: Configure secondary settings
