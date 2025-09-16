@@ -150,6 +150,7 @@ The critical variables to configure are at the very top.
           "optimization_time_step": {{ optimization_time_step }},
           "set_use_pv": true,
           "set_use_battery": true,
+          "inverter_is_hybrid": true,
           "number_of_deferrable_loads": 0,
           "set_nodischarge_to_grid": false,
           "load_power_forecast": {{ load_history | to_json }},
