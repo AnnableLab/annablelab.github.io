@@ -21,7 +21,7 @@ The critical variables to configure are at the very top.
 2. `maximum_power_from_grid`, this is the maximum power you can draw from the grid (e.g. when charging your batteries from the grid).
 3. `maximum_power_to_grid`, this is the maximum power you can feed into the grid (e.g. when exporting solar, or discharging batteries).
 4. `inverter_ac_output_max`, the max AC power your inverter can produce (e.g. A 10kW inverter = 10000)
-5. `inverter_ac_input_max`, the max AC power your inverter and consume (The same as the above with Sigenergy inverters)
+5. `inverter_ac_input_max`, the max AC power your inverter can consume (The same as the above with Sigenergy inverters)
 6. `battery_minimum_state_of_charge_pct`, what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for blackout protection).
 
 ```yaml
@@ -254,7 +254,7 @@ description: "Runs EMHASS MPC optimizer, generating an optimal energy plan"
 {% endraw %}
 ```
 
-If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check the output in the EMHASS webview. We will also be adding out own output dashboard later.
+If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check the output in the EMHASS webview. We will also be adding our own output dashboard later.
 
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a new automation:
 
