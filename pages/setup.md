@@ -33,19 +33,19 @@ Inside the `packages` directory, create a file named `emhass.yaml` with the foll
 ```yaml
 {% raw %}rest_command:
   emhass_dayahead_optim:
-    url: http://localhost:5000/action/dayahead-optim
+    url: http://127.0.0.1:5000/action/dayahead-optim
     method: POST
     content_type: "application/json"
     timeout: 240
     payload: "{{ payload }}"
   emhass_naive_mpc_optim:
-    url: http://localhost:5000/action/naive-mpc-optim
+    url: http://127.0.0.1:5000/action/naive-mpc-optim
     method: POST
     content_type: "application/json"
     timeout: 240
     payload: "{{ payload }}"
   emhass_publish_data:
-    url: http://localhost:5000/action/publish-data
+    url: http://127.0.0.1:5000/action/publish-data
     method: POST
     content_type: "application/json"
     timeout: 240
