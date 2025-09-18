@@ -2,8 +2,7 @@ Here is an example dashboard that uses apex charts to view the energy plan produ
 recommend using it to verify the energy plan before moving on to full battery automation.
 
 ```yaml
-{% raw %}
-views:
+{% raw %}views:
   - type: panel
     path: energy-plan
     title: Energy Plan
@@ -180,7 +179,5 @@ views:
               });
             yaxis_id: price
         view_layout:
-          position: main
-
-{% endraw %}
+          position: main{% endraw %}
 ```

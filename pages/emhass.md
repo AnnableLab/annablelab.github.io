@@ -248,10 +248,7 @@ The critical variables to configure are at the very top.
       payload: "{{ payload }}"
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
-description: "Runs EMHASS MPC optimizer, generating an optimal energy plan"
-
-
-{% endraw %}
+description: "Runs EMHASS MPC optimizer, generating an optimal energy plan"{% endraw %}
 ```
 
 If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check the output in the EMHASS webview. We will also be adding our own output dashboard later.
@@ -259,7 +256,7 @@ If you run this script, EMHASS will produce a plan for the day. You should be ab
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a new automation:
 
 ```yaml
-alias: "Generate EMHASS energy plan"
+{% raw %}alias: "Generate EMHASS energy plan"
 description: "Automatically generate EMHASS energy plan when prices change"
 triggers:
   - trigger: state
@@ -275,7 +272,7 @@ actions:
   - action: script.generate_emhass_energy_plan_mpc
     metadata: {}
     data: {}
-mode: single
+mode: single{% endraw %}
 ```
 
 This will run every time the prices change and every minute to account for live solar / usage power changes.

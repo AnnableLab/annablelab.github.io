@@ -49,8 +49,7 @@ Inside the `packages` directory, create a file named `emhass.yaml` with the foll
     method: POST
     content_type: "application/json"
     timeout: 240
-    payload: "{{ payload }}"
-{% endraw %}
+    payload: "{{ payload }}"{% endraw %}
 ```
 
 Then restart home assistant.

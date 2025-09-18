@@ -133,8 +133,7 @@ actions:
               entity_id:
                 - number.sigen_plant_pcs_import_limitation
         alias: Check standby conditions
-mode: single
-{% endraw %}
+mode: single{% endraw %}
 ```
 
 ### Curtailment
@@ -220,6 +219,5 @@ actions:
         target:
           entity_id: number.sigen_plant_pv_max_power_limit
         alias: Set PV limit to Maximum
-mode: single
-{% endraw %}
+mode: single{% endraw %}
 ```
