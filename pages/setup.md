@@ -31,7 +31,7 @@ homeassistant:
 Inside the `packages` directory, create a file named `emhass.yaml` with the following content:
 
 ```yaml
-rest_command:
+{% raw %}rest_command:
   emhass_dayahead_optim:
     url: http://localhost:5000/action/dayahead-optim
     method: POST
@@ -50,6 +50,7 @@ rest_command:
     content_type: "application/json"
     timeout: 240
     payload: "{{ payload }}"
+{% endraw %}
 ```
 
 Then restart home assistant.
