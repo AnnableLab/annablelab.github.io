@@ -114,7 +114,7 @@ The critical variables to configure are at the very top.
         {% set ns = namespace(
           input=(
               state_attr('sensor.home_feed_in_forecast', 'forecasts') | list
-          ) | selectattr('per_kwh', 'number') | list,
+          ) | selectattr('per_kwh', 'is_number') | list,
           output={
             now().isoformat(): states('sensor.home_feed_in_price') | float(0)
           }
