@@ -143,112 +143,96 @@ The critical variables to configure are at the very top.
           {% set ns.output = ns.output | combine({ key: value }) %}
         {% endfor %}
         {{ ns.output }}
-      payload_common: |-
-          "cost_fun": "{{ cost_fun }}",
-          "prediction_horizon": {{ num_forecasts }},
-          "optimization_time_step": {{ optimization_time_step }},
-          "set_use_pv": true,
-          "set_use_battery": true,
-          "inverter_is_hybrid": true,
-          "number_of_deferrable_loads": 0,
-          "set_nodischarge_to_grid": false
-      payload: |-
-        {
-          {{ payload_common }},
-          "load_power_forecast": {{ load_history | to_json }},
-          "load_cost_forecast": {{ load_cost | to_json }},
-          "prod_price_forecast": {{ prod_price | to_json }},
-          "pv_power_forecast": {{ pv_power | to_json }},
-          "weight_battery_charge": {{ weight_battery_charge }},
-          "weight_battery_discharge": {{ weight_battery_discharge }},
-          "battery_minimum_state_of_charge": {{ battery_minimum_state_of_charge_pct / 100 }},
-          "battery_nominal_energy_capacity": {{ battery_nominal_energy_capacity }},
-          "battery_charge_power_max": {{ battery_charge_power_max }},
-          "battery_discharge_power_max": {{ battery_discharge_power_max }},
-          "maximum_power_from_grid": {{ maximum_power_from_grid }},
-          "maximum_power_to_grid": {{ maximum_power_to_grid }},
-          "inverter_ac_output_max": {{ inverter_ac_output_max }},
-          "inverter_ac_input_max": {{ inverter_ac_input_max }},
-          "soc_init": {{ soc_init }},
-          "soc_final": {{ soc_final }}
-        }
+      common:
+        cost_fun: "{{ cost_fun }}"
+        prediction_horizon: "{{ num_forecasts }}"
+        optimization_time_step: "{{ optimization_time_step }}"
+        set_use_pv: true
+        set_use_battery: true
+        inverter_is_hybrid: true
+        number_of_deferrable_loads: 0
+        set_nodischarge_to_grid: false
+      payload:
+        load_power_forecast: "{{ load_history }}"
+        load_cost_forecast: "{{ load_cost }}"
+        prod_price_forecast: "{{ prod_price }}"
+        pv_power_forecast: "{{ pv_power }}"
+        weight_battery_charge: "{{ weight_battery_charge }}"
+        weight_battery_discharge: "{{ weight_battery_discharge }}"
+        battery_minimum_state_of_charge: "{{ battery_minimum_state_of_charge_pct / 100 }}"
+        battery_nominal_energy_capacity: "{{ battery_nominal_energy_capacity }}"
+        battery_charge_power_max: "{{ battery_charge_power_max }}"
+        battery_discharge_power_max: "{{ battery_discharge_power_max }}"
+        maximum_power_from_grid: "{{ maximum_power_from_grid }}"
+        maximum_power_to_grid: "{{ maximum_power_to_grid }}"
+        inverter_ac_output_max: "{{ inverter_ac_output_max }}"
+        inverter_ac_input_max: "{{ inverter_ac_input_max }}"
+        soc_init: "{{ soc_init }}"
+        soc_final: "{{ soc_final }}"
     alias: Calculate payload
   - action: rest_command.emhass_naive_mpc_optim
     metadata: {}
     data:
-      payload: "{{ payload }}"
+      payload: "{{ combine(common, payload) | to_json }}"
     alias: Run EMHASS
   - variables:
-      payload: |-
-        {
-          {{ payload_common }},
-          "custom_pv_forecast_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}pv_power",
-            "unit_of_measurement": "W",
-            "device_class": "power",
-            "friendly_name": "{{ sensor_name_prefix }}PV Power"
-          },
-          "custom_load_forecast_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}load_power",
-            "unit_of_measurement": "W",
-            "device_class": "power",
-            "friendly_name": "{{ sensor_name_prefix }}Load Power"
-          },
-          "custom_hybrid_inverter_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}inverter_power",
-            "unit_of_measurement": "W",
-            "device_class": "power",
-            "friendly_name": "{{ sensor_name_prefix }}Inverter Power"
-          },
-          "custom_batt_forecast_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}batt_power",
-            "unit_of_measurement": "W",
-            "device_class": "power",
-            "friendly_name": "{{ sensor_name_prefix }}Battery Power"
-          },
-          "custom_grid_forecast_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}grid_power",
-            "unit_of_measurement": "W",
-            "device_class": "power",
-            "friendly_name": "{{ sensor_name_prefix }}Grid Power"
-          },
-          "custom_batt_soc_forecast_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}batt_soc",
-            "unit_of_measurement": "%",
-            "device_class": "battery",
-            "friendly_name": "{{ sensor_name_prefix }}Battery SOC"
-          },
-          "custom_cost_fun_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}cost_fun",
-            "unit_of_measurement": "$",
-            "device_class": "monetary",
-            "friendly_name": "{{ sensor_name_prefix }}Cost Function"
-          },
-          "custom_unit_load_cost_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}general_price",
-            "unit_of_measurement": "$",
-            "device_class": "monetary",
-            "friendly_name": "{{ sensor_name_prefix }}Buy Price"
-          },
-          "custom_unit_prod_price_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}feed_in_price",
-            "unit_of_measurement": "$",
-            "device_class": "monetary",
-            "friendly_name": "{{ sensor_name_prefix }}Sell Price"
-          },
-          "custom_optim_status_id": {
-            "entity_id": "sensor.{{ sensor_prefix }}optim_status",
-            "unit_of_measurement": "",
-            "friendly_name": "{{ sensor_name_prefix }}Optimisation Status"
-          }
-        }
+      payload:
+        custom_pv_forecast_id:
+          entity_id: "sensor.{{ sensor_prefix }}pv_power"
+          unit_of_measurement: "W"
+          device_class: "power"
+          friendly_name: "{{ sensor_name_prefix }}PV Power"
+        custom_load_forecast_id:
+          entity_id: "sensor.{{ sensor_prefix }}load_power"
+          unit_of_measurement: "W"
+          device_class: "power"
+          friendly_name: "{{ sensor_name_prefix }}Load Power"
+        custom_hybrid_inverter_id:
+          entity_id: "sensor.{{ sensor_prefix }}inverter_power"
+          unit_of_measurement: "W"
+          device_class: "power"
+          friendly_name: "{{ sensor_name_prefix }}Inverter Power"
+        custom_batt_forecast_id:
+          entity_id: "sensor.{{ sensor_prefix }}batt_power"
+          unit_of_measurement: "W"
+          device_class: "power"
+          friendly_name: "{{ sensor_name_prefix }}Battery Power"
+        custom_grid_forecast_id:
+          entity_id: "sensor.{{ sensor_prefix }}grid_power"
+          unit_of_measurement: "W"
+          device_class: "power"
+          friendly_name: "{{ sensor_name_prefix }}Grid Power"
+        custom_batt_soc_forecast_id:
+          entity_id: "sensor.{{ sensor_prefix }}batt_soc"
+          unit_of_measurement: "%"
+          device_class: "battery"
+          friendly_name: "{{ sensor_name_prefix }}Battery SOC"
+        custom_cost_fun_id:
+          entity_id: "sensor.{{ sensor_prefix }}cost_fun"
+          unit_of_measurement: "$"
+          device_class: "monetary"
+          friendly_name: "{{ sensor_name_prefix }}Cost Function"
+        custom_unit_load_cost_id:
+          entity_id: "sensor.{{ sensor_prefix }}general_price"
+          unit_of_measurement: "$"
+          device_class: "monetary"
+          friendly_name: "{{ sensor_name_prefix }}Buy Price"
+        custom_unit_prod_price_id:
+          entity_id: "sensor.{{ sensor_prefix }}feed_in_price"
+          unit_of_measurement: "$"
+          device_class: "monetary"
+          friendly_name: "{{ sensor_name_prefix }}Sell Price"
+        custom_optim_status_id:
+          entity_id: "sensor.{{ sensor_prefix }}optim_status"
+          unit_of_measurement: ""
+          friendly_name: "{{ sensor_name_prefix }}Optimisation Status"
   - action: rest_command.emhass_publish_data
     metadata: {}
     data:
-      payload: "{{ payload }}"
+      payload: "{{ combine(common, payload) | to_json }}"
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
-description: "Runs EMHASS MPC optimizer, generating an optimal energy plan"{% endraw %}
+description: Runs EMHASS MPC optimizer, generating an optimal energy plan{% endraw %}
 ```
 
 If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check the output in the EMHASS webview. We will also be adding our own output dashboard later.
