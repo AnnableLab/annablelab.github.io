@@ -65,26 +65,6 @@ recommend using it to verify the energy plan before moving on to full battery au
               in_chart: false
             transform: return x *-1
             yaxis_id: power
-          - entity: sensor.home_general_price
-            unit: $
-            invert: true
-            color: '#4400ff'
-            float_precision: 2
-            name: Buy Price
-            show:
-              legend_value: false
-              in_chart: false
-            yaxis_id: price
-          - entity: sensor.home_feed_in_price
-            unit: $
-            invert: true
-            float_precision: 2
-            color: '#ff00ff'
-            name: Sell Price
-            show:
-              legend_value: false
-              in_chart: false
-            yaxis_id: price
           - entity: sensor.mpc_pv_power
             curve: straight
             type: area
@@ -157,7 +137,7 @@ recommend using it to verify the energy plan before moving on to full battery au
             stroke_width: 3
             curve: straight
             show:
-              in_header: false
+              in_header: true
             color: '#4400ff'
             name: Buy Price
             data_generator: |
@@ -169,7 +149,7 @@ recommend using it to verify the energy plan before moving on to full battery au
             stroke_width: 3
             curve: straight
             show:
-              in_header: false
+              in_header: true
             color: '#ff00ff'
             name: Sell Price
             data_generator: >
