@@ -138,7 +138,7 @@ The critical variables to configure are at the very top.
           }
         ) %}
         {% for solar in ns.input %}
-          {% set key = solar.period_start.isoformat() %}
+          {% set key = (solar.period_start | as_datetime | as_local).isoformat() %}
           {% set value = (solar.pv_estimate * 1000) | round %}
           {% set ns.output = ns.output | combine({ key: value }) %}
         {% endfor %}
