@@ -39,6 +39,8 @@ Note: They recommend a site-per-string but have a restriction of 2 sites for a f
 
 For price forecasting we be using the [Amber Electric Integration](https://www.home-assistant.io/integrations/amberelectric/). This will require an API key that can be obtained via the [amber webapp](https://app.amber.com.au/) (Make sure to enable developer mode).
 
+This guide assumes a site name of `Home`. If you use another name you'll need to adjust the sensor entity names in the scripts and automations.
+
 Note: There is an [amber2mqtt addon](https://github.com/cabberley/amber2mqtt-addon) which boasts quicker price updating. This requires an MQTT server and adds some complexity so we won't be using it for this guide.
 
 ### EMHASS Optimizer
