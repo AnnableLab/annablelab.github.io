@@ -55,6 +55,7 @@
       num_forecasts: "{{ (60 / optimization_time_step * 24 * num_prediction_days) | int }}"
       soc_init: "{{ (states(sensors.battery_soc) | float(0) / 100) | round(3) }}"
       soc_final: "{{ battery_minimum_percent / 100 }}"
+      now_iso: "{{ now().replace(microsecond=0).isoformat() }}"
       common:
         cost_fun: "{{ cost_fun }}"
         prediction_horizon: "{{ num_forecasts }}"
@@ -83,7 +84,7 @@
                 state_attr(sensors.amber.general_forecast, 'forecasts') | list
             ) | selectattr('per_kwh', 'is_number') | list,
             output={
-              now().isoformat(): states(sensors.amber.general_price) | float(0)
+              now_iso: states(sensors.amber.general_price) | float(0)
             }
           ) %}
           {% for day in range(num_prediction_days) %}
@@ -100,7 +101,7 @@
                 state_attr(sensors.amber.feed_in_forecast, 'forecasts') | list
             ) | selectattr('per_kwh', 'is_number') | list,
             output={
-              now().isoformat(): states(sensors.amber.feed_in_price) | float(0)
+              now_iso: states(sensors.amber.feed_in_price) | float(0)
             }
           ) %}
           {% for day in range(num_prediction_days) %}
@@ -118,7 +119,7 @@
               | selectattr('period_start', '>', now())
               | selectattr('period_start', '<=', now() + timedelta(days=num_prediction_days)),
             output={
-              now().isoformat(): (states(sensors.solar.current_power) | float(0) * 1000) | round
+              now_iso: (states(sensors.solar.current_power) | float(0) * 1000) | round
             }
           ) %}
           {% for solar in ns.input %}
@@ -131,7 +132,7 @@
           {% set ns = namespace(
             input=history.statistics[sensors.consumed_power],
             output={
-              now().isoformat(): (states(sensors.consumed_power) | float(0) * 1000) | round(0)
+              now_iso: (states(sensors.consumed_power) | float(0) * 1000) | round(0)
             }
           ) %}
           {% for load in ns.input %}
