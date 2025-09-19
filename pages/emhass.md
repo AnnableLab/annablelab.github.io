@@ -171,7 +171,7 @@ The critical variables to configure are at the very top.
   - action: rest_command.emhass_naive_mpc_optim
     metadata: {}
     data:
-      payload: "{{ combine(common, payload) | to_json }}"
+      payload: "{{ combine(common, payload) | to_json(pretty_print=true) }}"
     alias: Run EMHASS
   - variables:
       payload:
@@ -227,7 +227,7 @@ The critical variables to configure are at the very top.
   - action: rest_command.emhass_publish_data
     metadata: {}
     data:
-      payload: "{{ combine(common, payload) | to_json }}"
+      payload: "{{ combine(common, payload) | to_json(pretty_print=true) }}"
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
 description: Runs EMHASS MPC optimizer, generating an optimal energy plan{% endraw %}
