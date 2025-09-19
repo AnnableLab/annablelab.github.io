@@ -104,19 +104,6 @@ The critical variables to configure are at the very top.
         inverter_ac_input_max: "{{ inverter_ac_input_max }}"
         soc_init: "{{ soc_init }}"
         soc_final: "{{ soc_final }}"
-        load_power_forecast: |-
-          {% set ns = namespace(
-            input=history.statistics[sensors.consumed_power],
-            output={
-              now().isoformat(): (states(sensors.consumed_power) | float(0) * 1000) | round(0)
-            }
-          ) %}
-          {% for load in ns.input %}
-            {% set load_start = load.start | as_datetime | as_local + timedelta(days=load_history_days_ago) %}
-            {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}
-            {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}
-          {% endfor %}
-          {{ ns.output }}
         load_cost_forecast: |-
           {% set ns = namespace(
             input=(
@@ -165,6 +152,19 @@ The critical variables to configure are at the very top.
             {% set key = (solar.period_start | as_datetime | as_local).isoformat() %}
             {% set value = (solar.pv_estimate * 1000) | round %}
             {% set ns.output = ns.output | combine({ key: value }) %}
+          {% endfor %}
+          {{ ns.output }}
+        load_power_forecast: |-
+          {% set ns = namespace(
+            input=history.statistics[sensors.consumed_power],
+            output={
+              now().isoformat(): (states(sensors.consumed_power) | float(0) * 1000) | round(0)
+            }
+          ) %}
+          {% for load in ns.input %}
+            {% set load_start = load.start | as_datetime | as_local + timedelta(days=load_history_days_ago) %}
+            {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}
+            {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}
           {% endfor %}
           {{ ns.output }}
     alias: Calculate payload
