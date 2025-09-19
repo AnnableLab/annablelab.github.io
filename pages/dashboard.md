@@ -181,3 +181,7 @@ recommend using it to verify the energy plan before moving on to full battery au
         view_layout:
           position: main{% endraw %}
 ```
+
+## Up Next
+
+→ [Battery Automation](/pages/automation)

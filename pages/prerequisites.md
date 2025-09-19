@@ -49,3 +49,7 @@ The rest of this guide will explain how to run actually configure and operate EM
 
 ### Graphs
 If you wish to generate pretty graph dashboards (recommended), you'll want to install the [ApexCharts Card](https://github.com/RomRider/apexcharts-card).
+
+## Up Next
+
+→ [EMHASS Setup](/pages/setup)

@@ -278,3 +278,7 @@ mode: single{% endraw %}
 This will run every time the prices change and every minute to account for live solar / usage power changes.
 
 Note: On my Intel NUC server, EMHASS takes a couple seconds to run. You may want to reduce the frequency on lower end hardware.
+
+## Up Next
+
+→ [Dashboard Setup](/pages/dashboard)

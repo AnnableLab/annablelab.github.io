@@ -56,3 +56,6 @@ Then restart home assistant.
 
 These are the 3 emhass actions we will now be able to execute from home assistant. In this guide we will only use the last two. They all take a payload as a parameter, which will later include all the required information such as the forecasts and solar/battery specs.
 
+## Up Next
+
+→ [Running EMHASS](/pages/emhass)
