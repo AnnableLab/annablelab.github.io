@@ -25,8 +25,9 @@
         consumed_power: sensor.sigen_plant_consumed_power
         solar:
           current_power: sensor.sigen_plant_pv_power
-          day1: sensor.solcast_pv_forecast_forecast_today
-          day2: sensor.solcast_pv_forecast_forecast_tomorrow
+          forecasts:
+            - sensor.solcast_pv_forecast_forecast_today
+            - sensor.solcast_pv_forecast_forecast_tomorrow
         amber:
           general_price: sensor.home_general_price
           general_forecast: sensor.home_general_forecast
@@ -114,8 +115,9 @@
           {{ ns.output }}
         pv_power_forecast: |-
           {% set ns = namespace(
-            input=(state_attr(sensors.solar.day1, 'detailedForecast') | list
-              + state_attr(sensors.solar.day2, 'detailedForecast') | list)
+            input=sensors.solar.forecasts
+              | map('state_attr', 'detailedForecast')
+              | sum(start=[])
               | selectattr('period_start', '>', now())
               | selectattr('period_start', '<=', now() + timedelta(days=num_prediction_days)),
             output={
