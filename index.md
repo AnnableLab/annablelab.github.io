@@ -13,7 +13,7 @@ but you have full control and able to run locally.
 
 I do not claim to be an energy expert and this guide is still a work in progress, but it does provide a complete working solution. I am just a software engineer sharing my learnings in the hopes of helping others as I found EMHASS quite thorny to begin with.
 
-Feedback and contributions are welcome. Feel free to raise issues or pull requests over on [GitHub](https://github.com/BrendanAnnable/brendanannable.github.io).
+Feedback and contributions are welcome. Feel free to raise issues or pull requests over on [GitHub](https://github.com/AnnableLab/annablelab.github.io).
 
 ## Getting started
 
