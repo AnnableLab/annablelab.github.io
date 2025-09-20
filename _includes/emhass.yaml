@@ -16,4 +16,4 @@
     method: POST
     content_type: "application/json"
     timeout: 240
-    payload: "{{ payload }}}}"{% endraw %}
+    payload: "{{ payload }}"{% endraw %}
