@@ -61,6 +61,7 @@
         cost_fun: "{{ cost_fun }}"
         prediction_horizon: "{{ num_forecasts }}"
         optimization_time_step: "{{ optimization_time_step }}"
+        delta_forecast_daily: "{{ num_prediction_days }}"
         set_use_pv: true
         set_use_battery: true
         inverter_is_hybrid: true
