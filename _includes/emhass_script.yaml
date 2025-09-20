@@ -3,8 +3,6 @@
       cost_fun: profit
       maximum_power_from_grid: 15000
       maximum_power_to_grid: 10000
-      inverter_ac_output_max: 30000
-      inverter_ac_input_max: 30000
       battery_minimum_percent: 10
     alias: Configure critical settings
   - variables:
@@ -21,6 +19,7 @@
         energy_capacity: sensor.sigen_plant_rated_energy_capacity
         charging_power: sensor.sigen_plant_ess_rated_charging_power
         discharging_power: sensor.sigen_plant_ess_rated_discharging_power
+        max_inverter_power: sensor.sigen_plant_max_active_power
         battery_soc: sensor.sigen_plant_battery_state_of_charge
         consumed_power: sensor.sigen_plant_consumed_power
         solar:
@@ -57,6 +56,7 @@
       soc_init: "{{ (states(sensors.battery_soc) | float(0) / 100) | round(3) }}"
       soc_final: "{{ battery_minimum_percent / 100 }}"
       now_iso: "{{ now().replace(microsecond=0).isoformat() }}"
+      max_inverter_power: "{{ (states(sensors.max_inverter_power) | float(0) * 1000) | round }}"
       common:
         cost_fun: "{{ cost_fun }}"
         prediction_horizon: "{{ num_forecasts }}"
@@ -75,8 +75,8 @@
         battery_discharge_power_max: "{{ (states(sensors.discharging_power) | float(0) * 1000) | round }}"
         maximum_power_from_grid: "{{ maximum_power_from_grid }}"
         maximum_power_to_grid: "{{ maximum_power_to_grid }}"
-        inverter_ac_output_max: "{{ inverter_ac_output_max }}"
-        inverter_ac_input_max: "{{ inverter_ac_input_max }}"
+        inverter_ac_output_max: "{{ max_inverter_power }}"
+        inverter_ac_input_max: "{{ max_inverter_power }}"
         soc_init: "{{ soc_init }}"
         soc_final: "{{ soc_final }}"
         load_cost_forecast: |-

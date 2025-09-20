@@ -12,6 +12,7 @@ You will also need to manually enable these disabled Sigenergy Plant sensors in 
 - `sensor.sigen_plant_rated_energy_capacity`
 - `sensor.sigen_plant_ess_rated_charging_power`
 - `sensor.sigen_plant_ess_rated_discharging_power`
+- `sensor.sigen_plant_max_active_power`
 
 Create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to yaml mode and add the content below.
 
@@ -20,9 +21,7 @@ The critical variables to configure are at the very top.
 1. `cost_fun` — this can be either `profit`, `cost` or `self-consumption`, which either maximize profit, minimize cost or maximize self-consumption (selling any excess).
 2. `maximum_power_from_grid` — this is the maximum power you can draw from the grid (e.g. when charging your batteries from the grid).
 3. `maximum_power_to_grid` — this is the maximum power you can feed into the grid (e.g. when exporting solar, or discharging batteries).
-4. `inverter_ac_output_max` — the max AC power your inverter can produce (e.g. A 10kW inverter = 10000)
-5. `inverter_ac_input_max` — the max AC power your inverter can consume (The same as the above with Sigenergy inverters)
-6. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for blackout protection).
+4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for blackout protection).
 
 {% highlight yaml %}
 {% include emhass_script.yaml %}
