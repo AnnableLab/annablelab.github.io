@@ -23,6 +23,14 @@ energy plan:
 
 Using just these 4 modes and modulating various charge and discharge limits we can achieve a great deal!
 
+You will also need to manually enable these disabled Sigenergy Plant sensors in order for the script to function:
+
+- `select.sigen_plant_remote_ems_control_mode`
+- `number.sigen_plant_ess_max_charging_limit`
+- `number.sigen_plant_ess_max_discharging_limit`
+- `number.sigen_plant_pcs_import_limitation`
+- `number.sigen_plant_pv_max_power_limit`
+
 {% highlight yaml %}
 {% include battery_automation.yaml %}
 {% endhighlight %}
