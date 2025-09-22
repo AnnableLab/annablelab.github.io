@@ -64,12 +64,13 @@
           - entity: sensor.mpc_pv_power
             curve: straight
             type: area
-            color: '#fc0'
+            color: "#fc0"
             extend_to: false
             show:
               in_header: false
               legend_value: false
-            data_generator: |
+            unit: kW
+            data_generator: |-
               return entity.attributes.forecasts.map((entry) => {
                 return [new Date(entry.date), entry.mpc_pv_power/1000];
               });
@@ -77,39 +78,42 @@
           - entity: sensor.mpc_load_power
             curve: stepline
             type: area
-            color: '#a0f'
+            color: "#a0f"
             extend_to: false
             show:
               in_header: false
               legend_value: false
-            data_generator: |
+            unit: kW
+            data_generator: |-
               return entity.attributes.forecasts.map((entry) => {
                 return [new Date(entry.date), -entry.mpc_load_power/1000];
               });
             yaxis_id: power
           - entity: sensor.mpc_grid_power
             curve: stepline
-            color: '#1af'
+            color: "#1af"
             type: area
             extend_to: false
             show:
               in_header: false
               legend_value: false
-            data_generator: |
+            unit: kW
+            data_generator: |-
               return entity.attributes.forecasts.map((entry) => {
                 return [new Date(entry.date), -entry.mpc_grid_power/1000];
               });
             yaxis_id: power
           - entity: sensor.mpc_batt_power
             curve: stepline
-            color: '#00bb84'
+            color: "#00bb84"
             extend_to: false
             show:
               in_header: false
               legend_value: false
             stroke_width: 1
             type: area
-            data_generator: |
+            unit: kW
+            data_generator: |-
               return entity.attributes.battery_scheduled_power.map((entry) => {
                 return [new Date(entry.date), -entry.mpc_batt_power/1000];
               });
@@ -119,12 +123,12 @@
             curve: straight
             stroke_width: 4
             stroke_dash: 4
-            color: '#00cc00'
+            color: "#00cc00"
             extend_to: false
             show:
               in_header: false
               legend_value: false
-            data_generator: |
+            data_generator: |-
               return entity.attributes.battery_scheduled_soc.map((entry) => {
                 return [new Date(entry.date), entry.mpc_batt_soc];
               });
@@ -134,9 +138,9 @@
             curve: straight
             show:
               in_header: true
-            color: '#4400ff'
+            color: "#4400ff"
             name: Buy Price
-            data_generator: |
+            data_generator: |-
               return entity.attributes.unit_load_cost_forecasts.map((entry) => {
                 return [new Date(entry.date), entry.mpc_general_price];
               });
@@ -146,11 +150,10 @@
             curve: straight
             show:
               in_header: true
-            color: '#ff00ff'
+            color: "#ff00ff"
             name: Sell Price
-            data_generator: >
-              return entity.attributes.unit_prod_price_forecasts.map((entry) =>
-              {
+            data_generator: |-
+              return entity.attributes.unit_prod_price_forecasts.map((entry) => {
                 return [new Date(entry.date), entry.mpc_feed_in_price];
               });
             yaxis_id: price
