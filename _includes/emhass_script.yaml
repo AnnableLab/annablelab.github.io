@@ -6,9 +6,9 @@
       battery_minimum_percent: 10
     alias: Configure critical settings
   - variables:
-      num_prediction_days: 1
+      num_prediction_days: 2
       optimization_time_step: 5
-      load_history_days_ago: 1
+      load_history_days_ago: 2
       weight_battery_charge: 0.02
       weight_battery_discharge: 0.02
       sensor_prefix: mpc_
