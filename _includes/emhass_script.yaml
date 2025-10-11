@@ -71,6 +71,7 @@
         weight_battery_charge: "{{ weight_battery_charge }}"
         weight_battery_discharge: "{{ weight_battery_discharge }}"
         battery_minimum_state_of_charge: "{{ battery_minimum_percent / 100 }}"
+        battery_maximum_state_of_charge: 1
         battery_nominal_energy_capacity: "{{ (states(sensors.energy_capacity) | float(0) * 1000) | round }}"
         battery_charge_power_max: "{{ (states(sensors.charging_power) | float(0) * 1000) | round }}"
         battery_discharge_power_max: "{{ (states(sensors.discharging_power) | float(0) * 1000) | round }}"
