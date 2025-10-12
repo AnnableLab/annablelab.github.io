@@ -135,9 +135,10 @@
             yaxis_id: soc
           - entity: sensor.mpc_general_price
             stroke_width: 3
+            float_precision: 2
             curve: straight
             show:
-              in_header: true
+              in_header: raw
             color: "#4400ff"
             name: Buy Price
             data_generator: |-
@@ -147,9 +148,10 @@
             yaxis_id: price
           - entity: sensor.mpc_feed_in_price
             stroke_width: 3
+            float_precision: 2
             curve: straight
             show:
-              in_header: true
+              in_header: raw
             color: "#ff00ff"
             name: Sell Price
             data_generator: |-
