@@ -1,6 +1,6 @@
 {% raw %}sequence:
   - variables:
-      cost_fun: profit
+      costfun: profit
       maximum_power_from_grid: 15000
       maximum_power_to_grid: 10000
       battery_minimum_percent: 10
@@ -58,7 +58,7 @@
       now_iso: "{{ now().replace(microsecond=0).isoformat() }}"
       max_inverter_power: "{{ (states(sensors.max_inverter_power) | float(0) * 1000) | round }}"
       common:
-        cost_fun: "{{ cost_fun }}"
+        costfun: "{{ costfun }}"
         prediction_horizon: "{{ num_forecasts }}"
         optimization_time_step: "{{ optimization_time_step }}"
         delta_forecast_daily: "{{ num_prediction_days }}"

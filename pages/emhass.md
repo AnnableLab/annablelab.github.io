@@ -18,7 +18,7 @@ Create a new script from scratch (under Settings -> Automations & Scenes -> Scri
 
 The critical variables to configure are at the very top.
 
-1. `cost_fun` — this can be either `profit`, `cost` or `self-consumption`, which either maximize profit, minimize cost or maximize self-consumption (selling any excess).
+1. `costfun` — this can be either `profit`, `cost` or `self-consumption`, which either maximize profit, minimize cost or maximize self-consumption (selling any excess).
 2. `maximum_power_from_grid` — this is the maximum power you can draw from the grid (e.g. when charging your batteries from the grid).
 3. `maximum_power_to_grid` — this is the maximum power you can feed into the grid (e.g. when exporting solar, or discharging batteries).
 4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for blackout protection).
