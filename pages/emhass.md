@@ -19,6 +19,7 @@ Create a new script from scratch (under Settings -> Automations & Scenes -> Scri
 The critical variables to configure are at the very top.
 
 1. `costfun` — this can be either `profit`, `cost` or `self-consumption`, which either maximize profit, minimize cost or maximize self-consumption (selling any excess).
+    - UPDATE: There is a currently an [open issue](https://github.com/davidusb-geek/emhass/issues/559) within EMHASS preventing this parameter from working correctly. For now you will need to set it via the EMHASS Config editor.
 2. `maximum_power_from_grid` — this is the maximum power you can draw from the grid (e.g. when charging your batteries from the grid).
 3. `maximum_power_to_grid` — this is the maximum power you can feed into the grid (e.g. when exporting solar, or discharging batteries).
 4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for blackout protection).
