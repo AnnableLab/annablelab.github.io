@@ -27,6 +27,7 @@
           forecasts:
             - sensor.solcast_pv_forecast_forecast_today
             - sensor.solcast_pv_forecast_forecast_tomorrow
+            - sensor.solcast_pv_forecast_forecast_day_3
         amber:
           general_price: sensor.home_general_price
           general_forecast: sensor.home_general_forecast

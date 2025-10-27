@@ -14,7 +14,11 @@ You will also need to manually enable these disabled Sigenergy Plant sensors in 
 - `sensor.sigen_plant_ess_rated_discharging_power`
 - `sensor.sigen_plant_max_active_power`
 
-Create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to yaml mode and add the content below.
+Solcast by default only enables today and tomorrow solar forecast sensors, meaning at 11pm you'll only get 25 hours of forecasting. You will need to enable the solcast day 3 forecast sensor to always provide 2 full days of solar forecasting (and if you want longer horizons, you can enable up to 7 days and add them to the forecasts list within the script).
+
+- `sensor.solcast_pv_forecast_forecast_day_3`
+
+Next, create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to yaml mode and add the content below.
 
 The critical variables to configure are at the very top.
 
