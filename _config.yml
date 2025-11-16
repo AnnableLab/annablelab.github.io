@@ -28,6 +28,8 @@ nav:
     url: /pages/dashboard.html
   - title: "Battery Automation"
     url: /pages/automation.html
+  - title: "Conclusion"
+    url: /pages/conclusion.html
 highlighter: rouge
 rouge:
   theme: monokai

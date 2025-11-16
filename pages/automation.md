@@ -43,3 +43,7 @@ You will also want an automation to automatically handle negative prices. This a
 {% highlight yaml %}
 {% include curtailment.yaml %}
 {% endhighlight %}
+
+## Up Next
+
+→ [Conclusion](/pages/conclusion)
