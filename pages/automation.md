@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Automation & Scheduling
+permalink: /automation/
 ---
 
 # Automated Battery Control
@@ -46,4 +47,4 @@ You will also want an automation to automatically handle negative prices. This a
 
 ## Up Next
 
-→ [Conclusion](/pages/conclusion)
+→ [Conclusion](/conclusion/)

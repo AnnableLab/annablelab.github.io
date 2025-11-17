@@ -1,3 +1,11 @@
+---
+layout: default
+title: Architecture
+permalink: /architecture/
+---
+
+# Architecture
+
 Despite its daunting sophistication at first glance, EMHASS is quite simple at its core. You feed in 4 forecast values and it will spit out an optimal strategy for a given solar system, including when to charge and discharge your battery. Those 4 forecasts are:
 
 1. A forecast of how much you can sell electricity for (i.e. feed-in price).
@@ -23,4 +31,4 @@ Here is a 3-day plan which has self consumption as the goal. It will charge the 
 
 ## Up Next
 
-→ [Prerequisites](/pages/prerequisites)
+→ [Prerequisites](/prerequisites/)
