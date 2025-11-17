@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Conclusion
-permalink: /conclusion/
+permalink: /conclusion
 ---
 
 # Conclusion

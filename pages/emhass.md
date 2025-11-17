@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Running EMHASS
-permalink: /emhass/
+permalink: /emhass
 ---
 
 # Running EMHASS
@@ -63,4 +63,4 @@ Note: On my Intel NUC Home Assistant server, this script takes a couple of secon
 
 ## Up Next
 
-→ [Dashboard Setup](/dashboard/)
+→ [Dashboard Setup](/dashboard)

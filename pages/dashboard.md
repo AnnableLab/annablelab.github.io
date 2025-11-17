@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Dashboard
-permalink: /dashboard/
+permalink: /dashboard
 ---
 
 # Dashboard
@@ -15,4 +15,4 @@ recommend using it to verify the energy plan before moving on to full battery au
 
 ## Up Next
 
-→ [Battery Automation](/automation/)
+→ [Battery Automation](/automation)

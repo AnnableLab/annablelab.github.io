@@ -19,4 +19,4 @@ Feedback and contributions are welcome. Feel free to raise issues or pull reques
 
 First we will start with an overview of the general architecture of how everything fits together.
 
-→ [Jump to Architecture](/architecture/)
+→ [Jump to Architecture](/architecture)

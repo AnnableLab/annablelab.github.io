@@ -1,7 +1,7 @@
 ---
 layout: default
 title: EMHASS Setup
-permalink: /setup/
+permalink: /setup
 ---
 
 # EMHASS Setup
@@ -41,4 +41,4 @@ These are the 3 emhass actions we will now be able to execute from home assistan
 
 ## Up Next
 
-→ [Running EMHASS](/emhass/)
+→ [Running EMHASS](/emhass)

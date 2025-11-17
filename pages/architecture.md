@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Architecture
-permalink: /architecture/
+permalink: /architecture
 ---
 
 # Architecture
@@ -31,4 +31,4 @@ Here is a 3-day plan which has self consumption as the goal. It will charge the 
 
 ## Up Next
 
-→ [Prerequisites](/prerequisites/)
+→ [Prerequisites](/prerequisites)

@@ -9,7 +9,7 @@ markdown: kramdown
 kramdown:
   input: GFM
   hard_wrap: false
-permalink: pretty
+permalink: /:basename
 plugins:
   - jekyll-sitemap
   - jekyll-feed
@@ -18,19 +18,19 @@ nav:
   - title: "Home"
     url: /
   - title: "Architecture"
-    url: /architecture/
+    url: /architecture
   - title: "Prerequisites"
-    url: /prerequisites/
+    url: /prerequisites
   - title: "EMHASS Setup"
-    url: /setup/
+    url: /setup
   - title: "Running EMHASS"
-    url: /emhass/
+    url: /emhass
   - title: "Dashboard"
-    url: /dashboard/
+    url: /dashboard
   - title: "Battery Automation"
-    url: /automation/
+    url: /automation
   - title: "Conclusion"
-    url: /conclusion/
+    url: /conclusion
 highlighter: rouge
 rouge:
   theme: monokai

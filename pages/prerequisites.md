@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Prerequisites
-permalink: /prerequisites/
+permalink: /prerequisites
 ---
 
 # Prerequisites
@@ -55,4 +55,4 @@ If you wish to generate pretty graph dashboards (recommended), you'll want to in
 
 ## Up Next
 
-→ [EMHASS Setup](/setup/)
+→ [EMHASS Setup](/setup)
