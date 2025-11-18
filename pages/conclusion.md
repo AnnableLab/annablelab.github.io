@@ -2,6 +2,9 @@
 layout: default
 title: Conclusion
 permalink: /conclusion
+redirect_from:
+  - /pages/conclusion/
+  - /pages/conclusion.html
 ---
 
 # Conclusion

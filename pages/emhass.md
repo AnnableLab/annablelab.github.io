@@ -2,6 +2,9 @@
 layout: default
 title: Running EMHASS
 permalink: /emhass
+redirect_from:
+   - /pages/emhass/
+   - /pages/emhass.html
 ---
 
 # Running EMHASS

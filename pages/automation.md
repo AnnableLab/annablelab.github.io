@@ -2,6 +2,9 @@
 layout: default
 title: Automation & Scheduling
 permalink: /automation
+redirect_from:
+  - /pages/automation/
+  - /pages/automation.html
 ---
 
 # Automated Battery Control

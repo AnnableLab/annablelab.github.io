@@ -2,6 +2,9 @@
 layout: default
 title: EMHASS Setup
 permalink: /setup
+redirect_from:
+  - /pages/setup/
+  - /pages/setup.html
 ---
 
 # EMHASS Setup

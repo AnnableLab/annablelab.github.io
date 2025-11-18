@@ -2,6 +2,9 @@
 layout: default
 title: Prerequisites
 permalink: /prerequisites
+redirect_from:
+  - /pages/prerequisites/
+  - /pages/prerequisites.html
 ---
 
 # Prerequisites

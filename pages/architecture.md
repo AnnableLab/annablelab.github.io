@@ -2,6 +2,9 @@
 layout: default
 title: Architecture
 permalink: /architecture
+redirect_from:
+  - /pages/architecture/
+  - /pages/architecture.html
 ---
 
 # Architecture

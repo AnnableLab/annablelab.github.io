@@ -2,6 +2,9 @@
 layout: default
 title: Dashboard
 permalink: /dashboard
+redirect_from:
+  - /pages/dashboard/
+  - /pages/dashboard.html
 ---
 
 # Dashboard
