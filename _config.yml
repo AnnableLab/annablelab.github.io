@@ -12,7 +12,6 @@ kramdown:
 permalink: /:basename
 plugins:
   - jekyll-sitemap
-  - jekyll-feed
   - jekyll-seo-tag
   - jekyll-redirect-from
 nav:
