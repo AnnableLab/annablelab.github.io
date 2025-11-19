@@ -1,4 +1,3 @@
-
 /* Modern theming with CSS variables */
 :root {
   --bg: #ffffff;
@@ -41,21 +40,57 @@ html[data-theme="dark"] {
   --link: #38bdf8;
 }
 
-* { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); }
-a { color: var(--link); text-decoration: none; }
-a:hover { text-decoration: underline; }
-.site-header { border-bottom: 1px solid var(--border); background: var(--card); }
-.site-description { color: var(--muted); }
-.site-nav ul { list-style: none; padding: 0; display: flex; gap: 1rem; flex-wrap: wrap; }
-.theme-toggle { margin-left: 1rem; padding: .4rem .7rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; }
-.theme-toggle:hover { filter: brightness(1.1); }
-.wrap { max-width: 980px; margin: 0 auto; padding: 1rem; }
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+.site-description {
+  color: var(--muted);
+}
+.site-nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.theme-toggle {
+  margin-left: 1rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+}
+.theme-toggle:hover {
+  filter: brightness(1.1);
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1rem;
+}
 /* Base code styling */
-pre, code {
+pre,
+code {
   background: #1e293b; /* slate-800 */
-  color: #f8fafc;      /* near-white */
-  font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+  color: #f8fafc; /* near-white */
+  font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
 }
 
 /* Code block (multi-line) */
@@ -68,27 +103,108 @@ pre code {
 
 /* Inline code (single line inside text) */
 :not(pre) > code {
-  padding: .2rem .4rem;
+  padding: 0.2rem 0.4rem;
   border-radius: 4px;
 }
-table { border-collapse: collapse; width: 100%; background: var(--card); }
-th, td { border: 1px solid var(--border); padding: .5rem; text-align: left; }
-.alert { padding: .8rem 1rem; border-left: 4px solid #888; background: var(--card); border-radius: 6px; }
-.alert.warn { border-color: #f59e0b; }
-.alert.tip { border-color: #10b981; }
-kbd { border: 1px solid var(--border); border-bottom-width: 2px; padding: 0 .3rem; border-radius: 4px; background: var(--card); color: var(--fg); }
-
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--card);
+}
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  text-align: left;
+}
+.alert {
+  padding: 0.8rem 1rem;
+  border-left: 4px solid #888;
+  background: var(--card);
+  border-radius: 6px;
+}
+.alert.warn {
+  border-color: #f59e0b;
+}
+.alert.tip {
+  border-color: #10b981;
+}
+kbd {
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--fg);
+}
 
 /* Minimal clean styling */
-body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; line-height: 1.6; }
-.wrap { max-width: 980px; margin: 0 auto; padding: 1rem; }
-.site-header { border-bottom: 1px solid #ddd; }
-.site-nav ul { list-style: none; padding: 0; display: flex; gap: 1rem; flex-wrap: wrap; }
-pre, code { background: #000000; padding: .2rem .4rem; border-radius: 6px; }
-pre code { display: block; padding: 1rem; overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; }
-th, td { border: 1px solid #e5e7eb; padding: .5rem; text-align: left; }
-.alert { padding: .8rem 1rem; border-left: 4px solid #888; background: #f9fafb; border-radius: 6px; }
-.alert.warn { border-color: #f59e0b; background: #fffbeb; }
-.alert.tip { border-color: #10b981; background: #ecfdf5; }
-kbd { border: 1px solid #ccc; border-bottom-width: 2px; padding: 0 .3rem; border-radius: 4px; background: #fff; }
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.site-header {
+  border-bottom: 1px solid #ddd;
+}
+.site-nav ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+pre,
+code {
+  background: #000000;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+}
+pre code {
+  display: block;
+  padding: 1rem;
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+th,
+td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem;
+  text-align: left;
+}
+.alert {
+  padding: 0.8rem 1rem;
+  border-left: 4px solid #888;
+  background: #f9fafb;
+  border-radius: 6px;
+}
+.alert.warn {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+.alert.tip {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+kbd {
+  border: 1px solid #ccc;
+  border-bottom-width: 2px;
+  padding: 0 0.3rem;
+  border-radius: 4px;
+  background: #fff;
+}

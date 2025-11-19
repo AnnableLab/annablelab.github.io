@@ -9,16 +9,15 @@ redirect_from:
 
 # Automated Battery Control
 
-EMHASS by itself just creates the energy plan, but it won't actually know how to execute upon it. In
-order to execute the plan, we will need an automation.
+EMHASS by itself just creates the energy plan, but it won't actually know how to execute upon it. In order to execute
+the plan, we will need an automation.
 
-Note: Make sure the Sigenergy integration is no longer in Read-Only Mode, as we will now be changing
-values automatically! You will also have to turn
-`switch.sigen_plant_remote_ems_controled_by_home_assistant` on (Important: This will disable Amber
-SmartShift, which as of this writing you cannot currently turn back on without contacting Amber).
+Note: Make sure the Sigenergy integration is no longer in Read-Only Mode, as we will now be changing values
+automatically! You will also have to turn `switch.sigen_plant_remote_ems_controled_by_home_assistant` on (Important:
+This will disable Amber SmartShift, which as of this writing you cannot currently turn back on without contacting
+Amber).
 
-This automation switches the Sigenergy battery system between 4 operating modes depending on the
-energy plan:
+This automation switches the Sigenergy battery system between 4 operating modes depending on the energy plan:
 
 1. Maximum Self Consumption
 2. Command Discharging (PV First)
@@ -36,17 +35,15 @@ You will also need to manually enable these disabled Sigenergy Plant sensors in 
 - `number.sigen_plant_grid_export_limitation`
 - `number.sigen_plant_pv_max_power_limit`
 
-{% highlight yaml %}
-{% include battery_automation.yaml %}
-{% endhighlight %}
+{% highlight yaml %} {% include battery_automation.yaml %} {% endhighlight %}
 
 ### Curtailment
 
-You will also want an automation to automatically handle negative prices. This automation will prevent selling PV at a negative feed-in price, and will also prevent using solar when there is a negative general price (as you'll make more money drawing from the grid instead).
+You will also want an automation to automatically handle negative prices. This automation will prevent selling PV at a
+negative feed-in price, and will also prevent using solar when there is a negative general price (as you'll make more
+money drawing from the grid instead).
 
-{% highlight yaml %}
-{% include curtailment.yaml %}
-{% endhighlight %}
+{% highlight yaml %} {% include curtailment.yaml %} {% endhighlight %}
 
 ## Up Next
 

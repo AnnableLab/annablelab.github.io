@@ -6,9 +6,8 @@ permalink: /trace
 
 # Trace Downloading
 
-The EMHASS script trace is a JSON file which contains all the information sent to EMHASS from Home
-Assistant. It is great for debugging as you can verify that all the sensors are working and that the
-data sent to EMHASS is correct.
+The EMHASS script trace is a JSON file which contains all the information sent to EMHASS from Home Assistant. It is
+great for debugging as you can verify that all the sensors are working and that the data sent to EMHASS is correct.
 
 1. Open the Generate EMHASS Energy Plan script (note: not the automation)
 2. Click the Traces icon up the top right
@@ -23,7 +22,7 @@ data sent to EMHASS is correct.
 
 ### 1. Invalid inverter settings
 
-Under `sequence/5` there should be a payload that should start with all the inverter parameters. e.g. 
+Under `sequence/5` there should be a payload that should start with all the inverter parameters. e.g.
 
 ```
 "battery_charge_power_max": 46200,
