@@ -9,11 +9,11 @@ redirect_from:
 
 # Conclusion
 
-If everything has gone to plan you should now have a fully automated energy system! Hopefully this guide has been
-helpful to you. For some this may be the end of the road but for many it is just the beginning! Once you are up and
-running there are few more things you may want to start looking into:
+If everything has gone to plan, you should now have a fully automated energy system! Hopefully this guide has been
+helpful to you. For some this may be the end of the road, but for many it is just the beginning! Once you are up and
+running, there are a few more things you may want to start looking into:
 
-1. Using [Amber2MQTT](https://github.com/cabberley/amber2mqtt-addon) for faster more accurate price updates
+1. Using [Amber2MQTT](https://github.com/cabberley/amber2mqtt-addon) for faster, more accurate price updates
 2. Adding [ML-based load forecasting](https://emhass.readthedocs.io/en/latest/mlforecaster.html)
 3. Adding [deferrable loads](https://github.com/AnnableLab/annablelab.github.io/discussions/12)
 
@@ -38,7 +38,7 @@ If you have any features you would like to see added to this guide, start a disc
 
 If you are looking to contribute to this guide, for small changes you can raise a PR:
 
-- [GitHub Pull Requests](https://github.com/AnnableLab/annablelab.github.io/pulls).
+- [GitHub Pull Requests](https://github.com/AnnableLab/annablelab.github.io/pulls)
 
 For larger contributions I recommend creating a discussion first before raising a PR, so that we can align our goals
 before committing too much time and effort!

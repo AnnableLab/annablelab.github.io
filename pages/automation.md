@@ -24,7 +24,7 @@ This automation switches the Sigenergy battery system between 4 operating modes 
 3. Command Charging (PV First)
 4. Standby
 
-Using just these 4 modes and modulating various charge and discharge limits we can achieve a great deal!
+Using just these four modes and modulating various charge and discharge limits, we can achieve a great deal!
 
 You will also need to manually enable these disabled Sigenergy Plant sensors in order for the script to function:
 
@@ -40,7 +40,7 @@ You will also need to manually enable these disabled Sigenergy Plant sensors in 
 ### Curtailment
 
 You will also want an automation to automatically handle negative prices. This automation will prevent selling PV at a
-negative feed-in price, and will also prevent using solar when there is a negative general price (as you'll make more
+negative feed-in price and will also prevent using solar when there is a negative general price (as you'll make more
 money drawing from the grid instead).
 
 {% highlight yaml %} {% include curtailment.yaml %} {% endhighlight %}

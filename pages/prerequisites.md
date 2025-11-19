@@ -49,8 +49,8 @@ For solar forecasting we will be using the
 [Solcast Integration](https://github.com/BJReplay/ha-solcast-solar/tree/main). This requires an account and a site setup
 describing your setup via their website.
 
-Note: They recommend a site-per-string but have a restriction of 2 sites for a free user. If you have more strings you
-can weighted average them down to 2 (e.g. East and West). It is on my TODO list to give a 4-string example here.
+Note: They recommend a site-per-string but have a restriction of 2 sites for a free user. If you have more strings, you
+can weight average them down to 2 (e.g. East and West). It is on my TODO list to give a 4-string example here.
 
 ### Pricing forecast
 
@@ -58,7 +58,7 @@ For price forecasting we be using the
 [Amber Electric Integration](https://www.home-assistant.io/integrations/amberelectric/). This will require an API key
 that can be obtained via the [amber webapp](https://app.amber.com.au/) (Make sure to enable developer mode).
 
-This guide assumes a site name of `Home`. If you use another name you'll need to adjust the sensor entity names in the
+This guide assumes a site name of `Home`. If you use another name, you'll need to adjust the sensor entity names in the
 scripts and automations.
 
 Note: There is an [amber2mqtt addon](https://github.com/cabberley/amber2mqtt-addon) which boasts quicker price updating.
@@ -66,7 +66,7 @@ This requires an MQTT server and adds some complexity so we won't be using it fo
 
 ### EMHASS Optimizer
 
-Finally the brains of the operation, you'll need to install the
+Finally, the brains of the operation, you'll need to install the
 [EMHASS Addon](https://github.com/davidusb-geek/emhass-add-on).
 
 The rest of this guide will explain how to run actually configure and operate EMHASS in combination with the above

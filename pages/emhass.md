@@ -9,7 +9,7 @@ redirect_from:
 
 # Running EMHASS
 
-To run emhass, we want to execute the rest commands we setup earlier with all the parameters they need. In this guide we
+To run EMHASS, we want to execute the rest commands we setup earlier with all the parameters they need. In this guide we
 will use scripts.
 
 You will also need to manually enable these disabled Sigenergy Plant sensors in order for the script to function:
@@ -26,15 +26,15 @@ script).
 
 - `sensor.solcast_pv_forecast_forecast_day_3`
 
-Next, create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to yaml mode and add
+Next, create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to YAML mode and add
 the content below.
 
 The critical variables to configure are at the very top.
 
 1. `costfun` — this can be either `profit`, `cost` or `self-consumption`, which either maximize profit, minimize cost or
    maximize self-consumption (selling any excess).
-   - UPDATE: There is a currently an [open issue](https://github.com/davidusb-geek/emhass/issues/559) within EMHASS
-     preventing this parameter from working correctly. For now you will need to set it via the EMHASS Config editor.
+   - UPDATE: There is currently an [open issue](https://github.com/davidusb-geek/emhass/issues/559) within EMHASS
+     preventing this parameter from working correctly. For now, you will need to set it via the EMHASS Config editor.
 2. `maximum_power_from_grid` — this is the maximum power you can draw from the grid (e.g. when charging your batteries
    from the grid).
 3. `maximum_power_to_grid` — this is the maximum power you can feed into the grid (e.g. when exporting solar, or
@@ -72,8 +72,8 @@ mode: single{% endraw %}
 
 This will run every time the prices change and every minute to account for live solar / usage power changes.
 
-Note: On my Intel NUC Home Assistant server, this script takes a couple of seconds to run. If you are running lower end
-hardware you may want to either increase the optimization time step or reduce the running frequency.
+Note: On my Intel NUC Home Assistant server, this script takes a couple of seconds to run. If you are running lower-end
+hardware, you may want to either increase the optimization time step or reduce the running frequency.
 
 ## Up Next
 

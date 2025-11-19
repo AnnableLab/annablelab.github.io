@@ -13,8 +13,9 @@ redirect_from:
 
 Unfortunately, EMHASS has a long and confusing configuration page, many of which are not actually required.
 
-Thankfully we can completely ignore the EMHASS configuration page, so just leave it as default. We will be overriding
-the values we care about later when running EMHASS. If you have already configured things, don't worry, it won't matter.
+Thankfully, we can completely ignore the EMHASS configuration page, so just leave it as default. We will be overriding
+the values we care about later when running EMHASS. If you have already configured things and are having any trouble,
+try resetting them to the defaults.
 
 ### Running EMHASS from Home Assistant
 
