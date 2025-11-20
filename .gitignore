@@ -1,4 +1,10 @@
-/_site/
-Gemfile.lock
-node_modules
+# Astro
+dist/
+.astro/
+
+# Node
+node_modules/
+
+# IDE
 .idea
+.vscode/

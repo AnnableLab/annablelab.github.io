@@ -1,10 +1,6 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: EMHASS Setup
-permalink: /setup
-redirect_from:
-  - /pages/setup/
-  - /pages/setup.html
 ---
 
 # EMHASS Setup
@@ -28,14 +24,34 @@ You'll need access to your home assistant configuration files, I recommend the o
 If you have not setup packages yet, create a `packages` directory alongside `configuration.yaml`, and then add this to
 your home assistant `configuration.yaml` file:
 
-```
+```yaml
 homeassistant:
   packages: !include_dir_named packages
 ```
 
 Inside the `packages` directory, create a file named `emhass.yaml` with the following content:
 
-{% highlight yaml %} {% include emhass.yaml %} {% endhighlight %}
+```yaml
+rest_command:
+  emhass_dayahead_optim:
+    url: http://127.0.0.1:5000/action/dayahead-optim
+    method: POST
+    content_type: "application/json"
+    timeout: 240
+    payload: "{{ payload }}"
+  emhass_naive_mpc_optim:
+    url: http://127.0.0.1:5000/action/naive-mpc-optim
+    method: POST
+    content_type: "application/json"
+    timeout: 240
+    payload: "{{ payload }}"
+  emhass_publish_data:
+    url: http://127.0.0.1:5000/action/publish-data
+    method: POST
+    content_type: "application/json"
+    timeout: 240
+    payload: "{{ payload }}"
+```
 
 Then restart home assistant.
 
@@ -46,3 +62,4 @@ forecasts and solar/battery specs.
 ## Up Next
 
 → [Running EMHASS](/emhass)
+

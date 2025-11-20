@@ -1,10 +1,6 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Architecture
-permalink: /architecture
-redirect_from:
-  - /pages/architecture/
-  - /pages/architecture.html
 ---
 
 # Architecture
@@ -19,7 +15,7 @@ Those 4 forecasts are:
 4. A forecast of how much electricity you will use.
 
 <p align="center">
-  <img src="/assets/img/emhass_diagram.png" alt="EMHASS Architecture Diagram" width="800">
+  <img src="/img/emhass_diagram.png" alt="EMHASS Architecture Diagram" width="800">
 </p>
 
 EMHASS will take all this information and generate an energy plan that is optimal for a given goal. The goal can be to
@@ -31,7 +27,7 @@ your battery (e.g. via the Sigenergy modbus integration).
 You can also visualize this energy plan in a dashboard and see what EMHASS has decided to do:
 
 <p align="center">
-  <img src="/assets/img/3_day_plan.png" alt="EMHASS Plan Example" width="800">
+  <img src="/img/3_day_plan.png" alt="EMHASS Plan Example" width="800">
 </p>
 
 Here is a 3-day plan which has self-consumption as the goal. It will charge the battery during the day, selling any
@@ -41,3 +37,4 @@ before starting over the next day.
 ## Up Next
 
 → [Prerequisites](/prerequisites)
+

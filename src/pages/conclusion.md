@@ -1,10 +1,6 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Conclusion
-permalink: /conclusion
-redirect_from:
-  - /pages/conclusion/
-  - /pages/conclusion.html
 ---
 
 # Conclusion
@@ -42,3 +38,4 @@ If you are looking to contribute to this guide, for small changes you can raise 
 
 For larger contributions I recommend creating a discussion first before raising a PR, so that we can align our goals
 before committing too much time and effort!
+

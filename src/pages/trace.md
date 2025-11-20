@@ -1,7 +1,6 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Trace Downloading
-permalink: /trace
 ---
 
 # Trace Downloading
@@ -15,7 +14,7 @@ for debugging as you can verify that all the sensors are working and that the da
 4. Click Download trace
 
 <p align="center">
-  <img src="/assets/img/download_trace.png" alt="Download Trace Screenshot" width="800">
+  <img src="/img/download_trace.png" alt="Download Trace Screenshot" width="800">
 </p>
 
 ## Common Issues
@@ -45,3 +44,4 @@ Check the first value under all these lists of values:
 4. `pv_power_forecast`
 
 Make sure they look correct and valid.
+

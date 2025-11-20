@@ -1,6 +1,18 @@
 {
+  "name": "sigenergy-guide",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
   "devDependencies": {
-    "@shopify/prettier-plugin-liquid": "^1.10.0",
     "prettier": "^3.6.2"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.15.9"
   }
 }

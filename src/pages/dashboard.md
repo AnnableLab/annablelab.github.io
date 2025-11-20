@@ -1,4 +1,15 @@
-{% raw %}views:
+---
+layout: ../layouts/BaseLayout.astro
+title: Dashboard
+---
+
+# Dashboard
+
+Here is an example dashboard that uses apex charts to view the energy plan produced by EMHASS. I recommend using it to
+verify the energy plan before moving on to full battery automation.
+
+```yaml
+views:
   - type: panel
     path: energy-plan
     title: Energy Plan
@@ -160,4 +171,10 @@
               });
             yaxis_id: price
         view_layout:
-          position: main{% endraw %}
+          position: main
+```
+
+## Up Next
+
+→ [Battery Automation](/automation)
+

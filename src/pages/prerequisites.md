@@ -1,10 +1,6 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Prerequisites
-permalink: /prerequisites
-redirect_from:
-  - /pages/prerequisites/
-  - /pages/prerequisites.html
 ---
 
 # Prerequisites
@@ -80,3 +76,4 @@ If you wish to generate pretty graph dashboards (recommended), you'll want to in
 ## Up Next
 
 → [EMHASS Setup](/setup)
+
