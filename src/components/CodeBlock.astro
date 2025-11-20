@@ -1,4 +1,6 @@
 ---
+import { Code } from 'astro:components';
+
 interface Props {
   code: string;
   lang?: string;
@@ -7,5 +9,5 @@ interface Props {
 const { code, lang = 'yaml' } = Astro.props;
 ---
 
-<pre><code class={`language-${lang}`}>{code}</code></pre>
+<Code code={code} lang={lang} theme="dracula" />
 

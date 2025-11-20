@@ -1,7 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CodeBlock from '../components/CodeBlock.astro';
+import { Code } from 'astro:components';
 import emhassYaml from '../includes/emhass.yaml?raw';
+
+const configYaml = `homeassistant:
+  packages: !include_dir_named packages`;
 ---
 
 <BaseLayout title="EMHASS Setup">
@@ -26,8 +30,7 @@ import emhassYaml from '../includes/emhass.yaml?raw';
   <p>If you have not setup packages yet, create a <code>packages</code> directory alongside <code>configuration.yaml</code>, and then add this to
   your home assistant <code>configuration.yaml</code> file:</p>
 
-  <pre><code class="language-yaml">homeassistant:
-  packages: !include_dir_named packages</code></pre>
+  <Code code={configYaml} lang="yaml" theme="dracula" />
 
   <p>Inside the <code>packages</code> directory, create a file named <code>emhass.yaml</code> with the following content:</p>
 
