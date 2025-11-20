@@ -1,2 +1,4 @@
 printWidth: 120
 proseWrap: always
+plugins:
+  - prettier-plugin-astro

@@ -1,17 +1,27 @@
 ---
-import { Code } from 'astro:components';
+import { Code } from "astro:components";
 
 interface Props {
   code: string;
   lang?: string;
 }
 
-const { code, lang = 'yaml' } = Astro.props;
+const { code, lang = "yaml" } = Astro.props;
 ---
 
 <div class="code-block-wrapper">
   <button class="copy-button" data-code={code} title="Copy to clipboard">
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
     </svg>
@@ -28,7 +38,7 @@ const { code, lang = 'yaml' } = Astro.props;
     max-height: 600px;
     overflow: auto;
   }
-  
+
   .code-block-wrapper :global(pre) {
     margin: 0;
     max-height: 600px;
@@ -73,40 +83,39 @@ const { code, lang = 'yaml' } = Astro.props;
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const copyButtons = document.querySelectorAll('.copy-button');
-    
-    copyButtons.forEach(button => {
-      button.addEventListener('click', async () => {
-        const code = button.getAttribute('data-code');
-        const copyText = button.querySelector('.copy-text');
-        const copiedText = button.querySelector('.copied-text');
-        
+  document.addEventListener("DOMContentLoaded", () => {
+    const copyButtons = document.querySelectorAll(".copy-button");
+
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const code = button.getAttribute("data-code");
+        const copyText = button.querySelector(".copy-text");
+        const copiedText = button.querySelector(".copied-text");
+
         if (!code) return;
-        
+
         try {
           await navigator.clipboard.writeText(code);
-          
+
           // Show "Copied!" feedback
           if (copyText && copiedText) {
-            copyText.style.display = 'none';
-            copiedText.style.display = 'inline';
+            copyText.style.display = "none";
+            copiedText.style.display = "inline";
           }
-          button.classList.add('copied');
-          
+          button.classList.add("copied");
+
           // Reset after 2 seconds
           setTimeout(() => {
             if (copyText && copiedText) {
-              copyText.style.display = 'inline';
-              copiedText.style.display = 'none';
+              copyText.style.display = "inline";
+              copiedText.style.display = "none";
             }
-            button.classList.remove('copied');
+            button.classList.remove("copied");
           }, 2000);
         } catch (err) {
-          console.error('Failed to copy code:', err);
+          console.error("Failed to copy code:", err);
         }
       });
     });
   });
 </script>
-
