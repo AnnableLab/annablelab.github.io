@@ -3,33 +3,22 @@ layout: ../layouts/BaseLayout.astro
 title: Home
 ---
 
-# Home Assistant Sigenergy Battery Automation with EMHASS
+This site aims to be a beginner's guide for setting up **EMHASS** with Home Assistant. It specifically targets those with
+a Sigenergy system with Amber Electric pricing. In the end you will have home assistant automatically controlling your
+battery, optimizing when to charge and discharge to and from the grid based on pricing and weather forecasts. This is
+akin to Amber's SmartShift, but you have full control and able to run locally.
 
-This is a comprehensive guide to setting up an energy management system with Home Assistant. The goal of this guide is
-to automatically control your Sigenergy solar + battery system to either minimize cost, maximize profit or maximize
-self-consumption (selling any excess).
+## Disclaimer
 
-The approach used in this guide is designed for the Australian electricity market. However, it can be adjusted for any
-market that offers dynamic pricing.
+I do not claim to be an energy expert, and this guide is still a work in progress, but it does provide a complete working
+solution. I am just a software engineer sharing my learnings in the hopes of helping others as I found EMHASS quite
+thorny to begin with.
 
-In this guide, we will be using EMHASS (Energy Management for Home Assistant), an energy optimizer that generates an
-optimal battery charge/discharge schedule based on forecasts.
+Feedback and contributions are welcome. Feel free to raise issues or pull requests over on
+[GitHub](https://github.com/AnnableLab/annablelab.github.io).
 
-## Table of Contents
+## Getting started
 
-1. [Architecture](/architecture)
-2. [Prerequisites](/prerequisites)
-3. [EMHASS Setup](/setup)
-4. [Running EMHASS](/emhass)
-5. [Dashboard Setup](/dashboard)
-6. [Battery Automation](/automation)
-7. [Conclusion](/conclusion)
+First, we will start with an overview of the general architecture of how everything fits together.
 
-## Optional
-
-- [Trace Downloading](/trace)
-
-## Get Started
-
-→ [Architecture](/architecture)
-
+→ [Jump to Architecture](/architecture)
