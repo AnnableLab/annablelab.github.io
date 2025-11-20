@@ -1,8 +1,14 @@
 ---
+import { SEO } from "astro-seo";
+
 const { title, description } = Astro.props;
 const siteTitle = "Sigenergy with Home Assistant and EMHASS";
 const siteDescription =
   "Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.";
+
+const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+const pageDescription = description || siteDescription;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const navItems = [
   { title: "Home", url: "/" },
@@ -19,6 +25,36 @@ const navItems = [
 <!doctype html>
 <html lang="en" data-theme="dark">
   <head>
+    <SEO
+      title={pageTitle}
+      description={pageDescription}
+      canonical={canonicalURL.toString()}
+      openGraph={{
+        basic: {
+          title: pageTitle,
+          type: "website",
+          image: `${Astro.site}img/emhass_diagram.png`,
+          url: canonicalURL.toString(),
+        },
+        optional: {
+          description: pageDescription,
+          siteName: siteTitle,
+        },
+      }}
+      twitter={{
+        card: "summary_large_image",
+        title: pageTitle,
+        description: pageDescription,
+        image: `${Astro.site}img/emhass_diagram.png`,
+      }}
+      extend={{
+        meta: [
+          { name: "author", content: "Brendan Annable" },
+          { name: "theme-color", content: "#1e1e1e" },
+        ],
+      }}
+    />
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script>
     <script is:inline>
@@ -29,10 +65,9 @@ const navItems = [
       gtag("js", new Date());
       gtag("config", "G-HNTKBKHJY3");
     </script>
+
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title ? `${title} | ${siteTitle}` : siteTitle}</title>
-    <meta name="description" content={description || siteDescription} />
     <link rel="stylesheet" href="/assets/css/style.css" />
   </head>
   <body>
