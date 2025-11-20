@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CodeBlock from '../components/CodeBlock.astro';
-import { Code } from 'astro:components';
 import emhassYaml from '../includes/emhass.yaml?raw';
 
 const configYaml = `homeassistant:
@@ -30,7 +29,7 @@ const configYaml = `homeassistant:
   <p>If you have not setup packages yet, create a <code>packages</code> directory alongside <code>configuration.yaml</code>, and then add this to
   your home assistant <code>configuration.yaml</code> file:</p>
 
-  <Code code={configYaml} lang="yaml" theme="dracula" />
+  <CodeBlock code={configYaml} lang="yaml" />
 
   <p>Inside the <code>packages</code> directory, create a file named <code>emhass.yaml</code> with the following content:</p>
 
