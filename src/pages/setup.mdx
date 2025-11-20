@@ -4,6 +4,7 @@ title: EMHASS Setup
 ---
 
 import CodeBlock from '../components/CodeBlock.astro';
+import packagesConfigYaml from '../includes/packages_config.yaml?raw';
 import emhassYaml from '../includes/emhass.yaml?raw';
 
 # EMHASS Setup
@@ -27,8 +28,7 @@ You'll need access to your home assistant configuration files, I recommend the o
 If you have not setup packages yet, create a `packages` directory alongside `configuration.yaml`, and then add this to
 your home assistant `configuration.yaml` file:
 
-<CodeBlock lang="yaml" code={`homeassistant:
-  packages: !include_dir_named packages`} />
+<CodeBlock lang="yaml" code={packagesConfigYaml} />
 
 Inside the `packages` directory, create a file named `emhass.yaml` with the following content:
 
