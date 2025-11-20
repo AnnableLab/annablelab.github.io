@@ -9,6 +9,11 @@ export default defineConfig({
   build: {
     format: 'file'
   },
+  markdown: {
+    shikiConfig: {
+      theme: 'dracula',
+    },
+  },
   redirects: {
     '/pages/architecture': '/architecture',
     '/pages/automation': '/automation',
