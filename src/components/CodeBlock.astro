@@ -1,0 +1,11 @@
+---
+interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = 'yaml' } = Astro.props;
+---
+
+<pre><code class={`language-${lang}`}>{code}</code></pre>
+
