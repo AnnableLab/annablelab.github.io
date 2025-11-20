@@ -6,6 +6,7 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   site: 'https://sigenergy.annable.me',
   integrations: [mdx(), sitemap()],
+  compressHTML: false,
   build: {
     format: 'file'
   },
