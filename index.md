@@ -1,6 +1,5 @@
 ---
 layout: default
-title: Home
 ---
 
 This site aims to be a beginner's guide for setting up **EMHASS** with Home Assistant. It specifically targets those with
