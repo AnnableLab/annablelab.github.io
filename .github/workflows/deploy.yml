@@ -2,45 +2,32 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build Astro site
-        run: npm run build
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
+
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: ./dist/
+          branch: gh-pages
+          clean-exclude: pr-preview/
+          force: false
