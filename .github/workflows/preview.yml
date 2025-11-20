@@ -25,15 +25,15 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Remove CNAME before build
+        if: github.event.action != 'closed'
+        run: rm -f ./public/CNAME
+
       - name: Install and Build
         if: github.event.action != 'closed'
         run: |
           npm install
           npm run build
-
-      - name: Remove CNAME for PR preview
-        if: github.event.action != 'closed'
-        run: rm -f ./dist/CNAME
 
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
