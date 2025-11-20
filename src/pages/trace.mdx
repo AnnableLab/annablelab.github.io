@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Trace Downloading
-permalink: /trace
 ---
+
+import CodeBlock from "../components/CodeBlock.astro";
 
 # Trace Downloading
 
@@ -15,7 +16,7 @@ for debugging as you can verify that all the sensors are working and that the da
 4. Click Download trace
 
 <p align="center">
-  <img src="/assets/img/download_trace.png" alt="Download Trace Screenshot" width="800">
+  <img src="/img/download_trace.png" alt="Download Trace Screenshot" width="800" />
 </p>
 
 ## Common Issues
@@ -24,14 +25,15 @@ for debugging as you can verify that all the sensors are working and that the da
 
 Under `sequence/5` there should be a payload that should contain all the inverter parameters. e.g.
 
-```
-"battery_charge_power_max": 25200,
+<CodeBlock
+  lang="json"
+  code={`"battery_charge_power_max": 25200,
 "battery_discharge_power_max": 28800,
 "maximum_power_from_grid": 45000,
 "maximum_power_to_grid": 30000,
 "inverter_ac_output_max": 30000,
-"inverter_ac_input_max": 30000,
-```
+"inverter_ac_input_max": 30000,`}
+/>
 
 Make sure these all have values and they are in watts.
 

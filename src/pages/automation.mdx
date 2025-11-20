@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Automation & Scheduling
-permalink: /automation
-redirect_from:
-  - /pages/automation/
-  - /pages/automation.html
 ---
+
+import CodeBlock from "../components/CodeBlock.astro";
+import batteryAutomationYaml from "../includes/battery_automation.yaml?raw";
+import curtailmentYaml from "../includes/curtailment.yaml?raw";
 
 # Automated Battery Control
 
@@ -35,7 +35,7 @@ You will also need to manually enable these disabled Sigenergy Plant sensors in 
 - `number.sigen_plant_grid_export_limitation`
 - `number.sigen_plant_pv_max_power_limit`
 
-{% highlight yaml %} {% include battery_automation.yaml %} {% endhighlight %}
+<CodeBlock lang="yaml" code={batteryAutomationYaml} />
 
 ### Curtailment
 
@@ -43,7 +43,7 @@ You will also want an automation to automatically handle negative prices. This a
 negative feed-in price and will also prevent using solar when there is a negative general price (as you'll make more
 money drawing from the grid instead).
 
-{% highlight yaml %} {% include curtailment.yaml %} {% endhighlight %}
+<CodeBlock lang="yaml" code={curtailmentYaml} />
 
 ## Up Next
 

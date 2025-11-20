@@ -1,0 +1,121 @@
+---
+import { Code } from "astro:components";
+
+interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = "yaml" } = Astro.props;
+---
+
+<div class="code-block-wrapper">
+  <button class="copy-button" data-code={code} title="Copy to clipboard">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+    </svg>
+    <span class="copy-text">Copy</span>
+    <span class="copied-text" style="display: none;">Copied!</span>
+  </button>
+  <Code code={code} lang={lang} theme="dracula" />
+</div>
+
+<style>
+  .code-block-wrapper {
+    position: relative;
+    margin: 1.5em 0;
+    max-height: 600px;
+    overflow: auto;
+  }
+
+  .code-block-wrapper :global(pre) {
+    margin: 0;
+    max-height: 600px;
+  }
+
+  .copy-button {
+    position: absolute;
+    top: 8px;
+    right: 11px;
+    padding: 6px 10px;
+    background: rgba(68, 71, 90, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #f8f8f2;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+
+  .copy-button:hover {
+    background: rgba(98, 114, 164, 0.8);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .copy-button:active {
+    transform: scale(0.95);
+  }
+
+  .copy-button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .copy-button.copied {
+    background: rgba(80, 250, 123, 0.2);
+    border-color: rgba(80, 250, 123, 0.4);
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const copyButtons = document.querySelectorAll(".copy-button");
+
+    copyButtons.forEach((button) => {
+      button.addEventListener("click", async () => {
+        const code = button.getAttribute("data-code");
+        const copyText = button.querySelector(".copy-text");
+        const copiedText = button.querySelector(".copied-text");
+
+        if (!code) return;
+
+        try {
+          await navigator.clipboard.writeText(code);
+
+          // Show "Copied!" feedback
+          if (copyText && copiedText) {
+            copyText.style.display = "none";
+            copiedText.style.display = "inline";
+          }
+          button.classList.add("copied");
+
+          // Reset after 2 seconds
+          setTimeout(() => {
+            if (copyText && copiedText) {
+              copyText.style.display = "inline";
+              copiedText.style.display = "none";
+            }
+            button.classList.remove("copied");
+          }, 2000);
+        } catch (err) {
+          console.error("Failed to copy code:", err);
+        }
+      });
+    });
+  });
+</script>

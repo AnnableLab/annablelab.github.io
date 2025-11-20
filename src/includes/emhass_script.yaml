@@ -1,4 +1,4 @@
-{% raw %}sequence:
+sequence:
   - variables:
       costfun: profit
       maximum_power_from_grid: 15000
@@ -209,4 +209,4 @@
       payload: "{{ combine(common, payload) | to_json(pretty_print=true) }}"
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
-description: Runs EMHASS MPC optimizer, generating an optimal energy plan{% endraw %}
+description: Runs EMHASS MPC optimizer, generating an optimal energy plan

@@ -1,6 +1,24 @@
 {
+  "name": "sigenergy-guide",
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "devDependencies": {
-    "@shopify/prettier-plugin-liquid": "^1.10.0",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "prettier-plugin-astro": "^0.14.1"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.11",
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.15.9",
+    "astro-robots-txt": "^1.0.0",
+    "astro-seo": "^0.8.4"
   }
 }

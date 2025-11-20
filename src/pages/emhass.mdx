@@ -1,11 +1,11 @@
 ---
-layout: default
+layout: ../layouts/BaseLayout.astro
 title: Running EMHASS
-permalink: /emhass
-redirect_from:
-  - /pages/emhass/
-  - /pages/emhass.html
 ---
+
+import CodeBlock from "../components/CodeBlock.astro";
+import emhassScriptYaml from "../includes/emhass_script.yaml?raw";
+import emhassAutomationYaml from "../includes/emhass_automation.yaml?raw";
 
 # Running EMHASS
 
@@ -26,7 +26,7 @@ script).
 
 - `sensor.solcast_pv_forecast_forecast_day_3`
 
-Next, create a new script from scratch (under Settings -> Automations & Scenes -> Scripts), switch to YAML mode and add
+Next, create a new script from scratch (under Settings → Automations & Scenes → Scripts), switch to YAML mode and add
 the content below.
 
 The critical variables to configure are at the very top.
@@ -42,7 +42,7 @@ The critical variables to configure are at the very top.
 4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for
    blackout protection).
 
-{% highlight yaml %} {% include emhass_script.yaml %} {% endhighlight %}
+<CodeBlock lang="yaml" code={emhassScriptYaml} />
 
 If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check
 the output in the EMHASS webview. We will also be adding our own output dashboard shortly.
@@ -50,22 +50,7 @@ the output in the EMHASS webview. We will also be adding our own output dashboar
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
 new automation:
 
-```yaml
-{% raw %}alias: "Generate EMHASS energy plan"
-description: "Automatically generate EMHASS energy plan when prices change"
-triggers:
-  - trigger: state
-    entity_id:
-      - sensor.home_general_price
-      - sensor.home_feed_in_price
-    enabled: true
-conditions: []
-actions:
-  - action: script.generate_emhass_energy_plan_mpc
-    metadata: {}
-    data: {}
-mode: single{% endraw %}
-```
+<CodeBlock lang="yaml" code={emhassAutomationYaml} />
 
 This will run every time the prices change.
 

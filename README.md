@@ -5,6 +5,12 @@ This guide is automatically published to: [https://sigenergy.annable.me](https:/
 ## Local development
 
 ```bash
-bundle install
-bundle exec jekyll serve
+npm install
+npm run dev
+```
+
+## Build
+
+```bash
+npm run build
 ```

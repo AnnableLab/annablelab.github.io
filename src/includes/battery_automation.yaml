@@ -1,4 +1,4 @@
-{% raw %}alias: EMHASS Sigenergy Battery Management
+alias: EMHASS Sigenergy Battery Management
 description: "Automatically control the Sigenergy battery system using the EMHASS energy plan"
 triggers:
   - trigger: state
@@ -107,4 +107,4 @@ actions:
               entity_id:
                 - number.sigen_plant_pcs_import_limitation
         alias: Check standby conditions
-mode: single{% endraw %}
+mode: single

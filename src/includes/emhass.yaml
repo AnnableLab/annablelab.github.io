@@ -1,4 +1,4 @@
-{% raw %}rest_command:
+rest_command:
   emhass_dayahead_optim:
     url: http://127.0.0.1:5000/action/dayahead-optim
     method: POST
@@ -16,4 +16,4 @@
     method: POST
     content_type: "application/json"
     timeout: 240
-    payload: "{{ payload }}"{% endraw %}
+    payload: "{{ payload }}"

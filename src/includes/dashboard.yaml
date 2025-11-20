@@ -1,4 +1,4 @@
-{% raw %}views:
+views:
   - type: panel
     path: energy-plan
     title: Energy Plan
@@ -160,4 +160,4 @@
               });
             yaxis_id: price
         view_layout:
-          position: main{% endraw %}
+          position: main
