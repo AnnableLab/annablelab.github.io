@@ -59,9 +59,6 @@ triggers:
       - sensor.home_general_price
       - sensor.home_feed_in_price
     enabled: true
-  - trigger: time_pattern
-    minutes: "*"
-    hours: "*"
 conditions: []
 actions:
   - action: script.generate_emhass_energy_plan_mpc
@@ -70,7 +67,7 @@ actions:
 mode: single{% endraw %}
 ```
 
-This will run every time the prices change and every minute to account for live solar / usage power changes.
+This will run every time the prices change.
 
 Note: On my Intel NUC Home Assistant server, this script takes a couple of seconds to run. If you are running lower-end
 hardware, you may want to either increase the optimization time step or reduce the running frequency.
