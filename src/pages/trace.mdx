@@ -25,14 +25,12 @@ for debugging as you can verify that all the sensors are working and that the da
 
 Under `sequence/5` there should be a payload that should contain all the inverter parameters. e.g.
 
-export const inverterParamsJson = `"battery_charge_power_max": 25200,
+<CodeBlock lang="json" code={`"battery_charge_power_max": 25200,
 "battery_discharge_power_max": 28800,
 "maximum_power_from_grid": 45000,
 "maximum_power_to_grid": 30000,
 "inverter_ac_output_max": 30000,
-"inverter_ac_input_max": 30000,`;
-
-<CodeBlock code={inverterParamsJson} lang="json" />
+"inverter_ac_input_max": 30000,`} />
 
 Make sure these all have values and they are in watts.
 

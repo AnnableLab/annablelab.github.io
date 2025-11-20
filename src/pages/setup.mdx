@@ -27,14 +27,12 @@ You'll need access to your home assistant configuration files, I recommend the o
 If you have not setup packages yet, create a `packages` directory alongside `configuration.yaml`, and then add this to
 your home assistant `configuration.yaml` file:
 
-export const packagesYaml = `homeassistant:
-  packages: !include_dir_named packages`;
-
-<CodeBlock code={packagesYaml} lang="yaml" />
+<CodeBlock lang="yaml" code={`homeassistant:
+  packages: !include_dir_named packages`} />
 
 Inside the `packages` directory, create a file named `emhass.yaml` with the following content:
 
-<CodeBlock code={emhassYaml} lang="yaml" />
+<CodeBlock lang="yaml" code={emhassYaml} />
 
 Then restart home assistant.
 

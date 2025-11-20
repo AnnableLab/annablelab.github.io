@@ -41,7 +41,7 @@ The critical variables to configure are at the very top.
 4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for
    blackout protection).
 
-<CodeBlock code={emhassScriptYaml} lang="yaml" />
+<CodeBlock lang="yaml" code={emhassScriptYaml} />
 
 If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check
 the output in the EMHASS webview. We will also be adding our own output dashboard shortly.
@@ -49,7 +49,7 @@ the output in the EMHASS webview. We will also be adding our own output dashboar
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
 new automation:
 
-export const automationYaml = `alias: "Generate EMHASS energy plan"
+<CodeBlock lang="yaml" code={`alias: "Generate EMHASS energy plan"
 description: "Automatically generate EMHASS energy plan when prices change"
 triggers:
   - trigger: state
@@ -62,9 +62,7 @@ actions:
   - action: script.generate_emhass_energy_plan_mpc
     metadata: {}
     data: {}
-mode: single`;
-
-<CodeBlock code={automationYaml} lang="yaml" />
+mode: single`} />
 
 This will run every time the prices change.
 
