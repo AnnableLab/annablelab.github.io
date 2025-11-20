@@ -31,6 +31,10 @@ jobs:
           npm install
           npm run build
 
+      - name: Remove CNAME for PR preview
+        if: github.event.action != 'closed'
+        run: rm -f ./dist/CNAME
+
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
