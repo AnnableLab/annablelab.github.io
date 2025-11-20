@@ -77,4 +77,3 @@ actions:
           entity_id: number.sigen_plant_pv_max_power_limit
         alias: Set PV limit to Maximum
 mode: single
-

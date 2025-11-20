@@ -108,4 +108,3 @@ actions:
                 - number.sigen_plant_pcs_import_limitation
         alias: Check standby conditions
 mode: single
-

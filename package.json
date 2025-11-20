@@ -6,7 +6,9 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "prettier": "^3.6.2"

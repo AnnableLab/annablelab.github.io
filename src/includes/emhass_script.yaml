@@ -210,4 +210,3 @@ sequence:
     alias: Publish Energy Plan to HA
 alias: Generate EMHASS Energy Plan (MPC)
 description: Runs EMHASS MPC optimizer, generating an optimal energy plan
-

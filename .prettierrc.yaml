@@ -1,14 +1,2 @@
 printWidth: 120
 proseWrap: always
-plugins:
-  - "@shopify/prettier-plugin-liquid"
-overrides:
-  - files: "_includes/*.yaml"
-    options:
-      parser: "liquid-html"
-  - files: "_includes/*.html"
-    options:
-      parser: "liquid-html"
-  - files: "_layouts/*.html"
-    options:
-      parser: "liquid-html"
