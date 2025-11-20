@@ -25,6 +25,13 @@ const { code, lang = 'yaml' } = Astro.props;
   .code-block-wrapper {
     position: relative;
     margin: 1.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  
+  .code-block-wrapper :global(pre) {
+    margin: 0;
+    max-height: 500px;
   }
 
   .copy-button {
