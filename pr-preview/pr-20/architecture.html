@@ -1,0 +1,29 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-HNTKBKHJY3');
+    </script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sigenergy with Home Assistant and EMHASS</title><meta name="description" content="Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia."><link rel="stylesheet" href="/assets/css/style.css"></head> <body> <header class="site-header"> <div class="wrap"> <h1 class="site-title"> <a href="/">Sigenergy with Home Assistant and EMHASS</a> </h1> <p class="site-description">Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.</p> <nav class="site-nav"> <ul> <li> <a href="/">Home</a> </li><li> <a href="/architecture">Architecture</a> </li><li> <a href="/prerequisites">Prerequisites</a> </li><li> <a href="/setup">EMHASS Setup</a> </li><li> <a href="/emhass">Running EMHASS</a> </li><li> <a href="/dashboard">Dashboard</a> </li><li> <a href="/automation">Battery Automation</a> </li><li> <a href="/conclusion">Conclusion</a> </li> </ul> </nav> </div> </header> <main class="wrap content"> <h1 id="architecture">Architecture</h1>
+<p>Despite its daunting sophistication at first glance, EMHASS is quite simple at its core. You feed in 4 forecast values,
+and it will spit out an optimal strategy for a given solar system, including when to charge and discharge your battery.
+Those 4 forecasts are:</p>
+<ol>
+<li>A forecast of how much you can sell electricity for (i.e. feed-in price).</li>
+<li>A forecast of how much you can buy electricity for.</li>
+<li>A forecast of how much solar you will generate.</li>
+<li>A forecast of how much electricity you will use.</li>
+</ol>
+<p align="center"><img src="/img/emhass_diagram.png" alt="EMHASS Architecture Diagram" width="800"/></p>
+<p>EMHASS will take all this information and generate an energy plan that is optimal for a given goal. The goal can be to
+maximize profit, minimize cost, or maximize self-consumption (and sell any excess).</p>
+<p>This plan is published to Home Assistant in the form of new sensor entities, which automations can then use to control
+your battery (e.g. via the Sigenergy modbus integration).</p>
+<p>You can also visualize this energy plan in a dashboard and see what EMHASS has decided to do:</p>
+<p align="center"><img src="/img/3_day_plan.png" alt="EMHASS Plan Example" width="800"/></p>
+<p>Here is a 3-day plan which has self-consumption as the goal. It will charge the battery during the day, selling any
+excess during the best possible times (i.e. the morning and evening price peaks), keeping just enough to last the night
+before starting over the next day.</p>
+<h2 id="up-next">Up Next</h2>
+<p>→ <a href="/prerequisites">Prerequisites</a></p> </main> </body></html>

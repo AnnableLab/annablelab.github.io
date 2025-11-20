@@ -1,0 +1,420 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-HNTKBKHJY3');
+    </script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sigenergy with Home Assistant and EMHASS</title><meta name="description" content="Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia."><link rel="stylesheet" href="/assets/css/style.css"><style>.code-block-wrapper[data-astro-cid-jgrc2lfe]{position:relative;margin:1.5em 0}.copy-button[data-astro-cid-jgrc2lfe]{position:absolute;top:8px;right:11px;padding:6px 10px;background:#44475acc;border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#f8f8f2;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;transition:all .2s ease;z-index:10}.copy-button[data-astro-cid-jgrc2lfe]:hover{background:#6272a4cc;border-color:#fff3}.copy-button[data-astro-cid-jgrc2lfe]:active{transform:scale(.95)}.copy-button[data-astro-cid-jgrc2lfe] svg[data-astro-cid-jgrc2lfe]{width:16px;height:16px}.copy-button[data-astro-cid-jgrc2lfe].copied{background:#50fa7b33;border-color:#50fa7b66}
+</style></head> <body> <header class="site-header"> <div class="wrap"> <h1 class="site-title"> <a href="/">Sigenergy with Home Assistant and EMHASS</a> </h1> <p class="site-description">Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.</p> <nav class="site-nav"> <ul> <li> <a href="/">Home</a> </li><li> <a href="/architecture">Architecture</a> </li><li> <a href="/prerequisites">Prerequisites</a> </li><li> <a href="/setup">EMHASS Setup</a> </li><li> <a href="/emhass">Running EMHASS</a> </li><li> <a href="/dashboard">Dashboard</a> </li><li> <a href="/automation">Battery Automation</a> </li><li> <a href="/conclusion">Conclusion</a> </li> </ul> </nav> </div> </header> <main class="wrap content"> <h1 id="automated-battery-control">Automated Battery Control</h1>
+<p>EMHASS by itself just creates the energy plan, but it won’t actually know how to execute upon it. In order to execute
+the plan, we will need an automation.</p>
+<p>Note: Make sure the Sigenergy integration is no longer in Read-Only Mode, as we will now be changing values
+automatically! You will also have to turn <code>switch.sigen_plant_remote_ems_controled_by_home_assistant</code> on (Important:
+This will disable Amber SmartShift, which as of this writing you cannot currently turn back on without contacting
+Amber).</p>
+<p>This automation switches the Sigenergy battery system between 4 operating modes depending on the energy plan:</p>
+<ol>
+<li>Maximum Self Consumption</li>
+<li>Command Discharging (PV First)</li>
+<li>Command Charging (PV First)</li>
+<li>Standby</li>
+</ol>
+<p>Using just these four modes and modulating various charge and discharge limits, we can achieve a great deal!</p>
+<p>You will also need to manually enable these disabled Sigenergy Plant sensors in order for the script to function:</p>
+<ul>
+<li><code>select.sigen_plant_remote_ems_control_mode</code></li>
+<li><code>number.sigen_plant_ess_max_charging_limit</code></li>
+<li><code>number.sigen_plant_ess_max_discharging_limit</code></li>
+<li><code>number.sigen_plant_pcs_import_limitation</code></li>
+<li><code>number.sigen_plant_grid_export_limitation</code></li>
+<li><code>number.sigen_plant_pv_max_power_limit</code></li>
+</ul>
+<div class="code-block-wrapper" data-astro-cid-jgrc2lfe> <button class="copy-button" data-code="alias: EMHASS Sigenergy Battery Management
+description: &#34;Automatically control the Sigenergy battery system using the EMHASS energy plan&#34;
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.mpc_batt_power
+      - sensor.mpc_grid_power
+    from: null
+    to: null
+actions:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 1
+      milliseconds: 0
+  - variables:
+      p_batt: &#34;{{ states('sensor.mpc_batt_power') | int(0) }}&#34;
+      p_batt_kw: &#34;{{ (p_batt / 1000) | round(3) }}&#34;
+      p_grid: &#34;{{ states('sensor.mpc_grid_power') | int(0) }}&#34;
+      max_charge_rate: &#34;{{ states('sensor.sigen_plant_ess_rated_charging_power') | float(0) }}&#34;
+      max_discharge_rate: &#34;{{ states('sensor.sigen_plant_ess_rated_discharging_power') | float(0) }}&#34;
+      max_import_rate_kw: 100
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: &#34;{{ p_grid == 0 }}&#34;
+        sequence:
+          - action: select.select_option
+            metadata: {}
+            data:
+              option: Maximum Self Consumption
+            target:
+              entity_id: select.sigen_plant_remote_ems_control_mode
+            alias: Maximum Self Consumption
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: &#34;{{ max_charge_rate }}&#34;
+            target:
+              entity_id:
+                - number.sigen_plant_ess_max_charging_limit
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: &#34;{{ max_discharge_rate }}&#34;
+            target:
+              entity_id:
+                - number.sigen_plant_ess_max_discharging_limit
+        alias: Check self consume conditions
+      - conditions:
+          - condition: template
+            value_template: &#34;{{ p_batt > 0 or (p_grid < 0 and p_batt == 0) }}&#34;
+        sequence:
+          - action: select.select_option
+            metadata: {}
+            data:
+              option: Command Discharging (PV First)
+            target:
+              entity_id: select.sigen_plant_remote_ems_control_mode
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: &#34;{{ p_batt_kw }}&#34;
+            target:
+              entity_id: number.sigen_plant_ess_max_discharging_limit
+        alias: Check discharge conditions
+      - conditions:
+          - condition: template
+            value_template: &#34;{{ p_batt < 0 }}&#34;
+        sequence:
+          - action: select.select_option
+            metadata: {}
+            data:
+              option: Command Charging (PV First)
+            target:
+              entity_id: select.sigen_plant_remote_ems_control_mode
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: &#34;{{ p_batt_kw | abs }}&#34;
+            target:
+              entity_id:
+                - number.sigen_plant_ess_max_charging_limit
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: &#34;{{ max_import_rate_kw if p_grid > 0 else 0 }}&#34;
+            target:
+              entity_id:
+                - number.sigen_plant_pcs_import_limitation
+        alias: Check charge conditions
+      - conditions:
+          - condition: template
+            value_template: &#34;{{ p_batt == 0 }}&#34;
+        sequence:
+          - action: select.select_option
+            metadata: {}
+            data:
+              option: Standby
+            target:
+              entity_id: select.sigen_plant_remote_ems_control_mode
+          - action: number.set_value
+            metadata: {}
+            data:
+              value: 0
+            target:
+              entity_id:
+                - number.sigen_plant_pcs_import_limitation
+        alias: Check standby conditions
+mode: single
+
+" title="Copy to clipboard" data-astro-cid-jgrc2lfe> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-jgrc2lfe> <rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-astro-cid-jgrc2lfe></rect> <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-astro-cid-jgrc2lfe></path> </svg> <span class="copy-text" data-astro-cid-jgrc2lfe>Copy</span> <span class="copied-text" style="display: none;" data-astro-cid-jgrc2lfe>Copied!</span> </button> <pre class="astro-code dracula" style="background-color:#282A36;color:#F8F8F2; overflow-x: auto;" tabindex="0" data-astro-cid-jgrc2lfe data-language="yaml"><code><span class="line"><span style="color:#8BE9FD">alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> EMHASS Sigenergy Battery Management</span></span>
+<span class="line"><span style="color:#8BE9FD">description</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">Automatically control the Sigenergy battery system using the EMHASS energy plan</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">triggers</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.mpc_batt_power</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.mpc_grid_power</span></span>
+<span class="line"><span style="color:#8BE9FD">    from</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> null</span></span>
+<span class="line"><span style="color:#8BE9FD">    to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> null</span></span>
+<span class="line"><span style="color:#8BE9FD">actions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> delay</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      hours</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">      minutes</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">      seconds</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 1</span></span>
+<span class="line"><span style="color:#8BE9FD">      milliseconds</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      p_batt</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ states('sensor.mpc_batt_power') | int(0) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      p_batt_kw</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (p_batt / 1000) | round(3) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      p_grid</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ states('sensor.mpc_grid_power') | int(0) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      max_charge_rate</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ states('sensor.sigen_plant_ess_rated_charging_power') | float(0) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      max_discharge_rate</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ states('sensor.sigen_plant_ess_rated_discharging_power') | float(0) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      max_import_rate_kw</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 100</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> choose</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> conditions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> template</span></span>
+<span class="line"><span style="color:#8BE9FD">            value_template</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_grid == 0 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        sequence</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.select_option</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              option</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Maximum Self Consumption</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.sigen_plant_remote_ems_control_mode</span></span>
+<span class="line"><span style="color:#8BE9FD">            alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Maximum Self Consumption</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_charge_rate }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">                -</span><span style="color:#F1FA8C"> number.sigen_plant_ess_max_charging_limit</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_discharge_rate }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">                -</span><span style="color:#F1FA8C"> number.sigen_plant_ess_max_discharging_limit</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Check self consume conditions</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> conditions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> template</span></span>
+<span class="line"><span style="color:#8BE9FD">            value_template</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_batt > 0 or (p_grid &#x3C; 0 and p_batt == 0) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        sequence</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.select_option</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              option</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Command Discharging (PV First)</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.sigen_plant_remote_ems_control_mode</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_batt_kw }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.sigen_plant_ess_max_discharging_limit</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Check discharge conditions</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> conditions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> template</span></span>
+<span class="line"><span style="color:#8BE9FD">            value_template</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_batt &#x3C; 0 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        sequence</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.select_option</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              option</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Command Charging (PV First)</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.sigen_plant_remote_ems_control_mode</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_batt_kw | abs }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">                -</span><span style="color:#F1FA8C"> number.sigen_plant_ess_max_charging_limit</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_import_rate_kw if p_grid > 0 else 0 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">                -</span><span style="color:#F1FA8C"> number.sigen_plant_pcs_import_limitation</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Check charge conditions</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> conditions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> template</span></span>
+<span class="line"><span style="color:#8BE9FD">            value_template</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ p_batt == 0 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        sequence</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.select_option</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              option</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Standby</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> select.sigen_plant_remote_ems_control_mode</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">            metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">            data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">            target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">                -</span><span style="color:#F1FA8C"> number.sigen_plant_pcs_import_limitation</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Check standby conditions</span></span>
+<span class="line"><span style="color:#8BE9FD">mode</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> single</span></span>
+<span class="line"></span></code></pre> </div>  <script type="module">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".copy-button").forEach(e=>{e.addEventListener("click",async()=>{const c=e.getAttribute("data-code"),t=e.querySelector(".copy-text"),o=e.querySelector(".copied-text");if(c)try{await navigator.clipboard.writeText(c),t&&o&&(t.style.display="none",o.style.display="inline"),e.classList.add("copied"),setTimeout(()=>{t&&o&&(t.style.display="inline",o.style.display="none"),e.classList.remove("copied")},2e3)}catch(i){console.error("Failed to copy code:",i)}})})});</script>
+<h3 id="curtailment">Curtailment</h3>
+<p>You will also want an automation to automatically handle negative prices. This automation will prevent selling PV at a
+negative feed-in price and will also prevent using solar when there is a negative general price (as you’ll make more
+money drawing from the grid instead).</p>
+<div class="code-block-wrapper" data-astro-cid-jgrc2lfe> <button class="copy-button" data-code="alias: Sigenergy Inverter Curtailment
+description: &#34;Automatically manage negative energy prices by curtailing exporting and solar generation&#34;
+variables:
+  max_export_kw: 30
+  max_pv_kw: 100
+triggers:
+  - trigger: numeric_state
+    entity_id:
+      - sensor.home_feed_in_price
+    below: 0
+    id: negative_fit
+  - trigger: numeric_state
+    entity_id:
+      - sensor.home_feed_in_price
+    id: positive_fit
+    above: 0
+  - trigger: numeric_state
+    entity_id:
+      - sensor.home_general_price
+    above: 0
+    id: positive_price
+  - trigger: numeric_state
+    entity_id:
+      - sensor.home_general_price
+    below: 0
+    id: negative_price
+  - trigger: state
+    entity_id:
+      - sensor.sigen_plant_grid_connection_status
+    from: null
+    to: null
+    id: grid_connection_change
+actions:
+  - alias: Curtail if feedin price is negative
+    if:
+      - condition: numeric_state
+        entity_id: sensor.home_feed_in_price
+        below: 0
+    then:
+      - action: number.set_value
+        metadata: {}
+        data:
+          value: 0
+        target:
+          entity_id: number.sigen_plant_grid_export_limitation
+        alias: Set export limit to 0
+    else:
+      - action: number.set_value
+        metadata: {}
+        data:
+          value: &#34;{{ max_export_kw }}&#34;
+        target:
+          entity_id: number.sigen_plant_grid_export_limitation
+        alias: Set export limit to 30
+  - alias: Ignore PV if usage price is negative
+    if:
+      - condition: numeric_state
+        entity_id: sensor.home_general_price
+        below: 0
+      - condition: state
+        entity_id: sensor.sigen_plant_grid_connection_status
+        state: On Grid
+    then:
+      - action: number.set_value
+        metadata: {}
+        data:
+          value: 0
+        target:
+          entity_id: number.sigen_plant_pv_max_power_limit
+        alias: Set PV limit to 0
+    else:
+      - action: number.set_value
+        metadata: {}
+        data:
+          value: &#34;{{ max_pv_kw }}&#34;
+        target:
+          entity_id: number.sigen_plant_pv_max_power_limit
+        alias: Set PV limit to Maximum
+mode: single
+
+" title="Copy to clipboard" data-astro-cid-jgrc2lfe> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-jgrc2lfe> <rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-astro-cid-jgrc2lfe></rect> <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-astro-cid-jgrc2lfe></path> </svg> <span class="copy-text" data-astro-cid-jgrc2lfe>Copy</span> <span class="copied-text" style="display: none;" data-astro-cid-jgrc2lfe>Copied!</span> </button> <pre class="astro-code dracula" style="background-color:#282A36;color:#F8F8F2; overflow-x: auto;" tabindex="0" data-astro-cid-jgrc2lfe data-language="yaml"><code><span class="line"><span style="color:#8BE9FD">alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Sigenergy Inverter Curtailment</span></span>
+<span class="line"><span style="color:#8BE9FD">description</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">Automatically manage negative energy prices by curtailing exporting and solar generation</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">  max_export_kw</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 30</span></span>
+<span class="line"><span style="color:#8BE9FD">  max_pv_kw</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 100</span></span>
+<span class="line"><span style="color:#8BE9FD">triggers</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.home_feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">    below</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> negative_fit</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.home_feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">    id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> positive_fit</span></span>
+<span class="line"><span style="color:#8BE9FD">    above</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.home_general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">    above</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> positive_price</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.home_general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">    below</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> negative_price</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> trigger</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> state</span></span>
+<span class="line"><span style="color:#8BE9FD">    entity_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#F1FA8C"> sensor.sigen_plant_grid_connection_status</span></span>
+<span class="line"><span style="color:#8BE9FD">    from</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> null</span></span>
+<span class="line"><span style="color:#8BE9FD">    to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> null</span></span>
+<span class="line"><span style="color:#8BE9FD">    id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> grid_connection_change</span></span>
+<span class="line"><span style="color:#8BE9FD">actions</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Curtail if feedin price is negative</span></span>
+<span class="line"><span style="color:#8BE9FD">    if</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">        entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">        below</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    then</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">        metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">        data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">        target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.sigen_plant_grid_export_limitation</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Set export limit to 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    else</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">        metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">        data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_export_kw }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.sigen_plant_grid_export_limitation</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Set export limit to 30</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Ignore PV if usage price is negative</span></span>
+<span class="line"><span style="color:#8BE9FD">    if</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> numeric_state</span></span>
+<span class="line"><span style="color:#8BE9FD">        entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">        below</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> condition</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> state</span></span>
+<span class="line"><span style="color:#8BE9FD">        entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_grid_connection_status</span></span>
+<span class="line"><span style="color:#8BE9FD">        state</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> On Grid</span></span>
+<span class="line"><span style="color:#8BE9FD">    then</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">        metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">        data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">        target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.sigen_plant_pv_max_power_limit</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Set PV limit to 0</span></span>
+<span class="line"><span style="color:#8BE9FD">    else</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.set_value</span></span>
+<span class="line"><span style="color:#8BE9FD">        metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">        data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          value</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_pv_kw }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        target</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> number.sigen_plant_pv_max_power_limit</span></span>
+<span class="line"><span style="color:#8BE9FD">        alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Set PV limit to Maximum</span></span>
+<span class="line"><span style="color:#8BE9FD">mode</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> single</span></span>
+<span class="line"></span></code></pre> </div>  
+<h2 id="up-next">Up Next</h2>
+<p>→ <a href="/conclusion">Conclusion</a></p> </main> </body></html>

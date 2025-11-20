@@ -1,0 +1,70 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-HNTKBKHJY3');
+    </script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sigenergy with Home Assistant and EMHASS</title><meta name="description" content="Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia."><link rel="stylesheet" href="/assets/css/style.css"><style>.code-block-wrapper[data-astro-cid-jgrc2lfe]{position:relative;margin:1.5em 0}.copy-button[data-astro-cid-jgrc2lfe]{position:absolute;top:8px;right:11px;padding:6px 10px;background:#44475acc;border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#f8f8f2;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;transition:all .2s ease;z-index:10}.copy-button[data-astro-cid-jgrc2lfe]:hover{background:#6272a4cc;border-color:#fff3}.copy-button[data-astro-cid-jgrc2lfe]:active{transform:scale(.95)}.copy-button[data-astro-cid-jgrc2lfe] svg[data-astro-cid-jgrc2lfe]{width:16px;height:16px}.copy-button[data-astro-cid-jgrc2lfe].copied{background:#50fa7b33;border-color:#50fa7b66}
+</style></head> <body> <header class="site-header"> <div class="wrap"> <h1 class="site-title"> <a href="/">Sigenergy with Home Assistant and EMHASS</a> </h1> <p class="site-description">Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.</p> <nav class="site-nav"> <ul> <li> <a href="/">Home</a> </li><li> <a href="/architecture">Architecture</a> </li><li> <a href="/prerequisites">Prerequisites</a> </li><li> <a href="/setup">EMHASS Setup</a> </li><li> <a href="/emhass">Running EMHASS</a> </li><li> <a href="/dashboard">Dashboard</a> </li><li> <a href="/automation">Battery Automation</a> </li><li> <a href="/conclusion">Conclusion</a> </li> </ul> </nav> </div> </header> <main class="wrap content"> <h1 id="emhass-setup">EMHASS Setup</h1>
+<h3 id="configuration">Configuration</h3>
+<p>Unfortunately, EMHASS has a long and confusing configuration page, many of which are not actually required.</p>
+<p>Thankfully, we can completely ignore the EMHASS configuration page, so just leave it as default. We will be overriding
+the values we care about later when running EMHASS. If you have already configured things and are having any trouble,
+try resetting them to the defaults.</p>
+<h3 id="running-emhass-from-home-assistant">Running EMHASS from Home Assistant</h3>
+<p>Since EMHASS is an addon, we need a communication system to run commands. One simple way is to use rest commands which
+we will setup below.</p>
+<p>You’ll need access to your home assistant configuration files, I recommend the official
+<a href="https://github.com/hassio-addons/addon-vscode">vscode addon</a>.</p>
+<p>If you have not setup packages yet, create a <code>packages</code> directory alongside <code>configuration.yaml</code>, and then add this to
+your home assistant <code>configuration.yaml</code> file:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#85E89D">homeassistant</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#85E89D">  packages</span><span style="color:#E1E4E8">: </span><span style="color:#F97583">!include_dir_named</span><span style="color:#9ECBFF"> packages</span></span></code></pre>
+<p>Inside the <code>packages</code> directory, create a file named <code>emhass.yaml</code> with the following content:</p>
+<div class="code-block-wrapper" data-astro-cid-jgrc2lfe> <button class="copy-button" data-code="rest_command:
+  emhass_dayahead_optim:
+    url: http://127.0.0.1:5000/action/dayahead-optim
+    method: POST
+    content_type: &#34;application/json&#34;
+    timeout: 240
+    payload: &#34;{{ payload }}&#34;
+  emhass_naive_mpc_optim:
+    url: http://127.0.0.1:5000/action/naive-mpc-optim
+    method: POST
+    content_type: &#34;application/json&#34;
+    timeout: 240
+    payload: &#34;{{ payload }}&#34;
+  emhass_publish_data:
+    url: http://127.0.0.1:5000/action/publish-data
+    method: POST
+    content_type: &#34;application/json&#34;
+    timeout: 240
+    payload: &#34;{{ payload }}&#34;
+
+" title="Copy to clipboard" data-astro-cid-jgrc2lfe> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-jgrc2lfe> <rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-astro-cid-jgrc2lfe></rect> <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-astro-cid-jgrc2lfe></path> </svg> <span class="copy-text" data-astro-cid-jgrc2lfe>Copy</span> <span class="copied-text" style="display: none;" data-astro-cid-jgrc2lfe>Copied!</span> </button> <pre class="astro-code dracula" style="background-color:#282A36;color:#F8F8F2; overflow-x: auto;" tabindex="0" data-astro-cid-jgrc2lfe data-language="yaml"><code><span class="line"><span style="color:#8BE9FD">rest_command</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">  emhass_dayahead_optim</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">    url</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> http://127.0.0.1:5000/action/dayahead-optim</span></span>
+<span class="line"><span style="color:#8BE9FD">    method</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> POST</span></span>
+<span class="line"><span style="color:#8BE9FD">    content_type</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">application/json</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    timeout</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 240</span></span>
+<span class="line"><span style="color:#8BE9FD">    payload</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ payload }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">  emhass_naive_mpc_optim</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">    url</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> http://127.0.0.1:5000/action/naive-mpc-optim</span></span>
+<span class="line"><span style="color:#8BE9FD">    method</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> POST</span></span>
+<span class="line"><span style="color:#8BE9FD">    content_type</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">application/json</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    timeout</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 240</span></span>
+<span class="line"><span style="color:#8BE9FD">    payload</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ payload }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">  emhass_publish_data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">    url</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> http://127.0.0.1:5000/action/publish-data</span></span>
+<span class="line"><span style="color:#8BE9FD">    method</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> POST</span></span>
+<span class="line"><span style="color:#8BE9FD">    content_type</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">application/json</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    timeout</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 240</span></span>
+<span class="line"><span style="color:#8BE9FD">    payload</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ payload }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"></span></code></pre> </div>  <script type="module">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".copy-button").forEach(e=>{e.addEventListener("click",async()=>{const c=e.getAttribute("data-code"),t=e.querySelector(".copy-text"),o=e.querySelector(".copied-text");if(c)try{await navigator.clipboard.writeText(c),t&&o&&(t.style.display="none",o.style.display="inline"),e.classList.add("copied"),setTimeout(()=>{t&&o&&(t.style.display="inline",o.style.display="none"),e.classList.remove("copied")},2e3)}catch(i){console.error("Failed to copy code:",i)}})})});</script>
+<p>Then restart home assistant.</p>
+<p>These are the 3 emhass actions we will now be able to execute from home assistant. In this guide we will only use the
+last two. They all take a payload as a parameter, which will later include all the required information such as the
+forecasts and solar/battery specs.</p>
+<h2 id="up-next">Up Next</h2>
+<p>→ <a href="/emhass">Running EMHASS</a></p> </main> </body></html>

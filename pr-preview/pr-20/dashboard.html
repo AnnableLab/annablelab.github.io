@@ -1,0 +1,341 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-HNTKBKHJY3');
+    </script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sigenergy with Home Assistant and EMHASS</title><meta name="description" content="Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia."><link rel="stylesheet" href="/assets/css/style.css"><style>.code-block-wrapper[data-astro-cid-jgrc2lfe]{position:relative;margin:1.5em 0}.copy-button[data-astro-cid-jgrc2lfe]{position:absolute;top:8px;right:11px;padding:6px 10px;background:#44475acc;border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#f8f8f2;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;transition:all .2s ease;z-index:10}.copy-button[data-astro-cid-jgrc2lfe]:hover{background:#6272a4cc;border-color:#fff3}.copy-button[data-astro-cid-jgrc2lfe]:active{transform:scale(.95)}.copy-button[data-astro-cid-jgrc2lfe] svg[data-astro-cid-jgrc2lfe]{width:16px;height:16px}.copy-button[data-astro-cid-jgrc2lfe].copied{background:#50fa7b33;border-color:#50fa7b66}
+</style></head> <body> <header class="site-header"> <div class="wrap"> <h1 class="site-title"> <a href="/">Sigenergy with Home Assistant and EMHASS</a> </h1> <p class="site-description">Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.</p> <nav class="site-nav"> <ul> <li> <a href="/">Home</a> </li><li> <a href="/architecture">Architecture</a> </li><li> <a href="/prerequisites">Prerequisites</a> </li><li> <a href="/setup">EMHASS Setup</a> </li><li> <a href="/emhass">Running EMHASS</a> </li><li> <a href="/dashboard">Dashboard</a> </li><li> <a href="/automation">Battery Automation</a> </li><li> <a href="/conclusion">Conclusion</a> </li> </ul> </nav> </div> </header> <main class="wrap content"> <h1 id="dashboard">Dashboard</h1>
+<p>Here is an example dashboard that uses apex charts to view the energy plan produced by EMHASS. I recommend using it to
+verify the energy plan before moving on to full battery automation.</p>
+<div class="code-block-wrapper" data-astro-cid-jgrc2lfe> <button class="copy-button" data-code="views:
+  - type: panel
+    path: energy-plan
+    title: Energy Plan
+    cards:
+      - type: custom:apexcharts-card
+        experimental:
+          hidden_by_default: true
+        apex_config:
+          chart:
+            height: auto
+        header:
+          show: true
+          show_states: true
+          colorize_states: true
+        graph_span: 24h
+        span:
+          start: minute
+          offset: +0h
+        all_series_config:
+          stroke_width: 2
+        yaxis:
+          - id: power
+            min: -25
+            max: 25
+            decimals: 0
+            apex_config:
+              title:
+                text: Power (kW)
+              forceNiceScale: true
+              tick_amount: 4
+          - id: soc
+            min: -100
+            max: 100
+            decimals: 0
+            show: false
+            apex_config:
+              title:
+                text: Battery State of Charge
+              opposite: true
+              forceNiceScale: true
+              tick_amount: 4
+          - id: price
+            min: -1
+            max: 1
+            decimals: 2
+            apex_config:
+              title:
+                text: Price ($)
+              opposite: true
+              forceNiceScale: true
+              tick_amount: 4
+        series:
+          - entity: sensor.mpc_cost_fun
+            unit: $
+            invert: true
+            float_precision: 0
+            name: Cost
+            show:
+              legend_value: false
+              in_chart: false
+            transform: return x *-1
+            yaxis_id: power
+          - entity: sensor.mpc_pv_power
+            curve: straight
+            type: area
+            color: &#34;#fc0&#34;
+            extend_to: false
+            show:
+              in_header: false
+              legend_value: false
+            unit: kW
+            data_generator: |-
+              return entity.attributes.forecasts.map((entry) => {
+                return [new Date(entry.date), entry.mpc_pv_power/1000];
+              });
+            yaxis_id: power
+          - entity: sensor.mpc_load_power
+            curve: stepline
+            type: area
+            color: &#34;#a0f&#34;
+            extend_to: false
+            show:
+              in_header: false
+              legend_value: false
+            unit: kW
+            data_generator: |-
+              return entity.attributes.forecasts.map((entry) => {
+                return [new Date(entry.date), -entry.mpc_load_power/1000];
+              });
+            yaxis_id: power
+          - entity: sensor.mpc_grid_power
+            curve: stepline
+            color: &#34;#1af&#34;
+            type: area
+            extend_to: false
+            show:
+              in_header: false
+              legend_value: false
+            unit: kW
+            data_generator: |-
+              return entity.attributes.forecasts.map((entry) => {
+                return [new Date(entry.date), -entry.mpc_grid_power/1000];
+              });
+            yaxis_id: power
+          - entity: sensor.mpc_batt_power
+            curve: stepline
+            color: &#34;#00bb84&#34;
+            extend_to: false
+            show:
+              in_header: false
+              legend_value: false
+            stroke_width: 1
+            type: area
+            unit: kW
+            data_generator: |-
+              return entity.attributes.battery_scheduled_power.map((entry) => {
+                return [new Date(entry.date), -entry.mpc_batt_power/1000];
+              });
+            yaxis_id: power
+          - entity: sensor.mpc_batt_soc
+            type: line
+            curve: straight
+            stroke_width: 4
+            stroke_dash: 4
+            color: &#34;#00cc00&#34;
+            extend_to: false
+            show:
+              in_header: false
+              legend_value: false
+            data_generator: |-
+              return entity.attributes.battery_scheduled_soc.map((entry) => {
+                return [new Date(entry.date), entry.mpc_batt_soc];
+              });
+            yaxis_id: soc
+          - entity: sensor.mpc_general_price
+            stroke_width: 3
+            float_precision: 2
+            curve: straight
+            show:
+              in_header: raw
+            color: &#34;#4400ff&#34;
+            name: Buy Price
+            data_generator: |-
+              return entity.attributes.unit_load_cost_forecasts.map((entry) => {
+                return [new Date(entry.date), entry.mpc_general_price];
+              });
+            yaxis_id: price
+          - entity: sensor.mpc_feed_in_price
+            stroke_width: 3
+            float_precision: 2
+            curve: straight
+            show:
+              in_header: raw
+            color: &#34;#ff00ff&#34;
+            name: Sell Price
+            data_generator: |-
+              return entity.attributes.unit_prod_price_forecasts.map((entry) => {
+                return [new Date(entry.date), entry.mpc_feed_in_price];
+              });
+            yaxis_id: price
+        view_layout:
+          position: main
+
+" title="Copy to clipboard" data-astro-cid-jgrc2lfe> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-jgrc2lfe> <rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-astro-cid-jgrc2lfe></rect> <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-astro-cid-jgrc2lfe></path> </svg> <span class="copy-text" data-astro-cid-jgrc2lfe>Copy</span> <span class="copied-text" style="display: none;" data-astro-cid-jgrc2lfe>Copied!</span> </button> <pre class="astro-code dracula" style="background-color:#282A36;color:#F8F8F2; overflow-x: auto;" tabindex="0" data-astro-cid-jgrc2lfe data-language="yaml"><code><span class="line"><span style="color:#8BE9FD">views</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> panel</span></span>
+<span class="line"><span style="color:#8BE9FD">    path</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> energy-plan</span></span>
+<span class="line"><span style="color:#8BE9FD">    title</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Energy Plan</span></span>
+<span class="line"><span style="color:#8BE9FD">    cards</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">      -</span><span style="color:#8BE9FD"> type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> custom:apexcharts-card</span></span>
+<span class="line"><span style="color:#8BE9FD">        experimental</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          hidden_by_default</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">        apex_config</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          chart</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">            height</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> auto</span></span>
+<span class="line"><span style="color:#8BE9FD">        header</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          show</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">          show_states</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">          colorize_states</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">        graph_span</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> 24h</span></span>
+<span class="line"><span style="color:#8BE9FD">        span</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          start</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> minute</span></span>
+<span class="line"><span style="color:#8BE9FD">          offset</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> +0h</span></span>
+<span class="line"><span style="color:#8BE9FD">        all_series_config</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          stroke_width</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">        yaxis</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">            min</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> -25</span></span>
+<span class="line"><span style="color:#8BE9FD">            max</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 25</span></span>
+<span class="line"><span style="color:#8BE9FD">            decimals</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">            apex_config</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              title</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">                text</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Power (kW)</span></span>
+<span class="line"><span style="color:#8BE9FD">              forceNiceScale</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">              tick_amount</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 4</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> soc</span></span>
+<span class="line"><span style="color:#8BE9FD">            min</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> -100</span></span>
+<span class="line"><span style="color:#8BE9FD">            max</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 100</span></span>
+<span class="line"><span style="color:#8BE9FD">            decimals</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            apex_config</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              title</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">                text</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Battery State of Charge</span></span>
+<span class="line"><span style="color:#8BE9FD">              opposite</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">              forceNiceScale</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">              tick_amount</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 4</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> price</span></span>
+<span class="line"><span style="color:#8BE9FD">            min</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> -1</span></span>
+<span class="line"><span style="color:#8BE9FD">            max</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 1</span></span>
+<span class="line"><span style="color:#8BE9FD">            decimals</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">            apex_config</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              title</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">                text</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Price ($)</span></span>
+<span class="line"><span style="color:#8BE9FD">              opposite</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">              forceNiceScale</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">              tick_amount</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 4</span></span>
+<span class="line"><span style="color:#8BE9FD">        series</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_cost_fun</span></span>
+<span class="line"><span style="color:#8BE9FD">            unit</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> $</span></span>
+<span class="line"><span style="color:#8BE9FD">            invert</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">            float_precision</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">            name</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Cost</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_chart</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            transform</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> return x *-1</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_pv_power</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> straight</span></span>
+<span class="line"><span style="color:#8BE9FD">            type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> area</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#fc0</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            extend_to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            unit</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> kW</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.forecasts.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), entry.mpc_pv_power/1000];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_load_power</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> stepline</span></span>
+<span class="line"><span style="color:#8BE9FD">            type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> area</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#a0f</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            extend_to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            unit</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> kW</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.forecasts.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), -entry.mpc_load_power/1000];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_grid_power</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> stepline</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#1af</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> area</span></span>
+<span class="line"><span style="color:#8BE9FD">            extend_to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            unit</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> kW</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.forecasts.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), -entry.mpc_grid_power/1000];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_batt_power</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> stepline</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#00bb84</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            extend_to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            stroke_width</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 1</span></span>
+<span class="line"><span style="color:#8BE9FD">            type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> area</span></span>
+<span class="line"><span style="color:#8BE9FD">            unit</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> kW</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.battery_scheduled_power.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), -entry.mpc_batt_power/1000];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_batt_soc</span></span>
+<span class="line"><span style="color:#8BE9FD">            type</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> line</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> straight</span></span>
+<span class="line"><span style="color:#8BE9FD">            stroke_width</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 4</span></span>
+<span class="line"><span style="color:#8BE9FD">            stroke_dash</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 4</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#00cc00</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            extend_to</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">              legend_value</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.battery_scheduled_soc.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), entry.mpc_batt_soc];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> soc</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">            stroke_width</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 3</span></span>
+<span class="line"><span style="color:#8BE9FD">            float_precision</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> straight</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> raw</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#4400ff</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            name</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Buy Price</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.unit_load_cost_forecasts.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), entry.mpc_general_price];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> price</span></span>
+<span class="line"><span style="color:#FF79C6">          -</span><span style="color:#8BE9FD"> entity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.mpc_feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">            stroke_width</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 3</span></span>
+<span class="line"><span style="color:#8BE9FD">            float_precision</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">            curve</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> straight</span></span>
+<span class="line"><span style="color:#8BE9FD">            show</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">              in_header</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> raw</span></span>
+<span class="line"><span style="color:#8BE9FD">            color</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">#ff00ff</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">            name</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Sell Price</span></span>
+<span class="line"><span style="color:#8BE9FD">            data_generator</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">              return entity.attributes.unit_prod_price_forecasts.map((entry) => {</span></span>
+<span class="line"><span style="color:#F1FA8C">                return [new Date(entry.date), entry.mpc_feed_in_price];</span></span>
+<span class="line"><span style="color:#F1FA8C">              });</span></span>
+<span class="line"><span style="color:#8BE9FD">            yaxis_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> price</span></span>
+<span class="line"><span style="color:#8BE9FD">        view_layout</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          position</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> main</span></span>
+<span class="line"></span></code></pre> </div>  <script type="module">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".copy-button").forEach(e=>{e.addEventListener("click",async()=>{const c=e.getAttribute("data-code"),t=e.querySelector(".copy-text"),o=e.querySelector(".copied-text");if(c)try{await navigator.clipboard.writeText(c),t&&o&&(t.style.display="none",o.style.display="inline"),e.classList.add("copied"),setTimeout(()=>{t&&o&&(t.style.display="inline",o.style.display="none"),e.classList.remove("copied")},2e3)}catch(i){console.error("Failed to copy code:",i)}})})});</script>
+<h2 id="up-next">Up Next</h2>
+<p>→ <a href="/automation">Battery Automation</a></p> </main> </body></html>

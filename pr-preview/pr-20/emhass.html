@@ -1,0 +1,492 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3"></script><script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag('js', new Date());
+      gtag('config', 'G-HNTKBKHJY3');
+    </script><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sigenergy with Home Assistant and EMHASS</title><meta name="description" content="Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia."><link rel="stylesheet" href="/assets/css/style.css"><style>.code-block-wrapper[data-astro-cid-jgrc2lfe]{position:relative;margin:1.5em 0}.copy-button[data-astro-cid-jgrc2lfe]{position:absolute;top:8px;right:11px;padding:6px 10px;background:#44475acc;border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#f8f8f2;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;transition:all .2s ease;z-index:10}.copy-button[data-astro-cid-jgrc2lfe]:hover{background:#6272a4cc;border-color:#fff3}.copy-button[data-astro-cid-jgrc2lfe]:active{transform:scale(.95)}.copy-button[data-astro-cid-jgrc2lfe] svg[data-astro-cid-jgrc2lfe]{width:16px;height:16px}.copy-button[data-astro-cid-jgrc2lfe].copied{background:#50fa7b33;border-color:#50fa7b66}
+</style></head> <body> <header class="site-header"> <div class="wrap"> <h1 class="site-title"> <a href="/">Sigenergy with Home Assistant and EMHASS</a> </h1> <p class="site-description">Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.</p> <nav class="site-nav"> <ul> <li> <a href="/">Home</a> </li><li> <a href="/architecture">Architecture</a> </li><li> <a href="/prerequisites">Prerequisites</a> </li><li> <a href="/setup">EMHASS Setup</a> </li><li> <a href="/emhass">Running EMHASS</a> </li><li> <a href="/dashboard">Dashboard</a> </li><li> <a href="/automation">Battery Automation</a> </li><li> <a href="/conclusion">Conclusion</a> </li> </ul> </nav> </div> </header> <main class="wrap content"> <h1 id="running-emhass">Running EMHASS</h1>
+<p>To run EMHASS, we want to execute the rest commands we setup earlier with all the parameters they need. In this guide we
+will use scripts.</p>
+<p>You will also need to manually enable these disabled Sigenergy Plant sensors in order for the script to function:</p>
+<ul>
+<li><code>sensor.sigen_plant_rated_energy_capacity</code></li>
+<li><code>sensor.sigen_plant_ess_rated_charging_power</code></li>
+<li><code>sensor.sigen_plant_ess_rated_discharging_power</code></li>
+<li><code>sensor.sigen_plant_max_active_power</code></li>
+</ul>
+<p>Solcast by default only enables today and tomorrow solar forecast sensors, meaning at 11pm you’ll only get 25 hours of
+forecasting. You will need to enable the solcast day 3 forecast sensor to always provide 2 full days of solar
+forecasting (and if you want longer horizons, you can enable up to 7 days and add them to the forecasts list within the
+script).</p>
+<ul>
+<li><code>sensor.solcast_pv_forecast_forecast_day_3</code></li>
+</ul>
+<p>Next, create a new script from scratch (under Settings → Automations &amp; Scenes → Scripts), switch to YAML mode and add
+the content below.</p>
+<p>The critical variables to configure are at the very top.</p>
+<ol>
+<li><code>costfun</code> — this can be either <code>profit</code>, <code>cost</code> or <code>self-consumption</code>, which either maximize profit, minimize cost or
+maximize self-consumption (selling any excess).
+<ul>
+<li>UPDATE: There is currently an <a href="https://github.com/davidusb-geek/emhass/issues/559">open issue</a> within EMHASS
+preventing this parameter from working correctly. For now, you will need to set it via the EMHASS Config editor.</li>
+</ul>
+</li>
+<li><code>maximum_power_from_grid</code> — this is the maximum power you can draw from the grid (e.g. when charging your batteries
+from the grid).</li>
+<li><code>maximum_power_to_grid</code> — this is the maximum power you can feed into the grid (e.g. when exporting solar, or
+discharging batteries).</li>
+<li><code>battery_minimum_percent</code> — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for
+blackout protection).</li>
+</ol>
+<div class="code-block-wrapper" data-astro-cid-jgrc2lfe> <button class="copy-button" data-code="sequence:
+  - variables:
+      costfun: profit
+      maximum_power_from_grid: 15000
+      maximum_power_to_grid: 10000
+      battery_minimum_percent: 10
+    alias: Configure critical settings
+  - variables:
+      num_prediction_days: 2
+      optimization_time_step: 5
+      load_history_days_ago: 2
+      weight_battery_charge: 0.02
+      weight_battery_discharge: 0.02
+      sensor_prefix: mpc_
+      sensor_name_prefix: &#34;MPC &#34;
+    alias: Configure secondary settings
+  - variables:
+      sensors:
+        energy_capacity: sensor.sigen_plant_rated_energy_capacity
+        charging_power: sensor.sigen_plant_ess_rated_charging_power
+        discharging_power: sensor.sigen_plant_ess_rated_discharging_power
+        max_inverter_power: sensor.sigen_plant_max_active_power
+        battery_soc: sensor.sigen_plant_battery_state_of_charge
+        consumed_power: sensor.sigen_plant_consumed_power
+        solar:
+          current_power: sensor.sigen_plant_pv_power
+          forecasts:
+            - sensor.solcast_pv_forecast_forecast_today
+            - sensor.solcast_pv_forecast_forecast_tomorrow
+            - sensor.solcast_pv_forecast_forecast_day_3
+        amber:
+          general_price: sensor.home_general_price
+          general_forecast: sensor.home_general_forecast
+          feed_in_price: sensor.home_feed_in_price
+          feed_in_forecast: sensor.home_feed_in_forecast
+    alias: Configure sensor entities
+  - variables:
+      start_time: |-
+        {% set delta = timedelta(days=load_history_days_ago) %}
+        {{ (now() - delta).isoformat() }}
+      end_time: |-
+        {% set delta = timedelta(days=load_history_days_ago) %}
+        {% set duration = timedelta(days=num_prediction_days) %}
+        {{ (now() - delta + duration).isoformat() }}
+    alias: Calculate variables
+  - action: recorder.get_statistics
+    data:
+      start_time: &#34;{{ start_time }}&#34;
+      end_time: &#34;{{ end_time }}&#34;
+      statistic_ids: &#34;{{ sensors.consumed_power }}&#34;
+      period: hour
+      types: mean
+    response_variable: history
+    alias: Fetch load history
+  - variables:
+      num_forecasts: &#34;{{ (60 / optimization_time_step * 24 * num_prediction_days) | int }}&#34;
+      soc_init: &#34;{{ (states(sensors.battery_soc) | float(0) / 100) | round(3) }}&#34;
+      soc_final: &#34;{{ battery_minimum_percent / 100 }}&#34;
+      now_iso: &#34;{{ now().replace(microsecond=0).isoformat() }}&#34;
+      max_inverter_power: &#34;{{ (states(sensors.max_inverter_power) | float(0) * 1000) | round }}&#34;
+      common:
+        costfun: &#34;{{ costfun }}&#34;
+        prediction_horizon: &#34;{{ num_forecasts }}&#34;
+        optimization_time_step: &#34;{{ optimization_time_step }}&#34;
+        delta_forecast_daily: &#34;{{ num_prediction_days }}&#34;
+        set_use_pv: true
+        set_use_battery: true
+        inverter_is_hybrid: true
+        number_of_deferrable_loads: 0
+        set_nodischarge_to_grid: false
+      payload:
+        weight_battery_charge: &#34;{{ weight_battery_charge }}&#34;
+        weight_battery_discharge: &#34;{{ weight_battery_discharge }}&#34;
+        battery_minimum_state_of_charge: &#34;{{ battery_minimum_percent / 100 }}&#34;
+        battery_maximum_state_of_charge: 1
+        battery_nominal_energy_capacity: &#34;{{ (states(sensors.energy_capacity) | float(0) * 1000) | round }}&#34;
+        battery_charge_power_max: &#34;{{ (states(sensors.charging_power) | float(0) * 1000) | round }}&#34;
+        battery_discharge_power_max: &#34;{{ (states(sensors.discharging_power) | float(0) * 1000) | round }}&#34;
+        maximum_power_from_grid: &#34;{{ maximum_power_from_grid }}&#34;
+        maximum_power_to_grid: &#34;{{ maximum_power_to_grid }}&#34;
+        inverter_ac_output_max: &#34;{{ max_inverter_power }}&#34;
+        inverter_ac_input_max: &#34;{{ max_inverter_power }}&#34;
+        soc_init: &#34;{{ soc_init }}&#34;
+        soc_final: &#34;{{ soc_final }}&#34;
+        load_cost_forecast: |-
+          {% set ns = namespace(
+            input=(
+                state_attr(sensors.amber.general_forecast, 'forecasts') | list
+            ) | selectattr('per_kwh', 'is_number') | list,
+            output={
+              now_iso: states(sensors.amber.general_price) | float(0)
+            }
+          ) %}
+          {% for day in range(num_prediction_days) %}
+            {% for forecast in ns.input %}
+              {% set start = forecast.start_time | as_datetime | as_local + timedelta(days=day) %}
+              {% set price = forecast.per_kwh | float(0) %}
+              {% set ns.output = ns.output | combine({ start.isoformat(): price }) %}
+            {% endfor %}
+          {% endfor %}
+          {{ ns.output }}
+        prod_price_forecast: |-
+          {% set ns = namespace(
+            input=(
+                state_attr(sensors.amber.feed_in_forecast, 'forecasts') | list
+            ) | selectattr('per_kwh', 'is_number') | list,
+            output={
+              now_iso: states(sensors.amber.feed_in_price) | float(0)
+            }
+          ) %}
+          {% for day in range(num_prediction_days) %}
+            {% for forecast in ns.input %}
+              {% set start = forecast.start_time | as_datetime | as_local + timedelta(days=day) %}
+              {% set price = forecast.per_kwh | float(0) %}
+              {% set ns.output = ns.output | combine({ start.isoformat(): price }) %}
+            {% endfor %}
+          {% endfor %}
+          {{ ns.output }}
+        pv_power_forecast: |-
+          {% set ns = namespace(
+            input=sensors.solar.forecasts
+              | map('state_attr', 'detailedForecast')
+              | sum(start=[])
+              | selectattr('period_start', '>', now())
+              | selectattr('period_start', '<=', now() + timedelta(days=num_prediction_days)),
+            output={
+              now_iso: (states(sensors.solar.current_power) | float(0) * 1000) | round
+            }
+          ) %}
+          {% for solar in ns.input %}
+            {% set key = (solar.period_start | as_datetime | as_local).isoformat() %}
+            {% set value = (solar.pv_estimate * 1000) | round %}
+            {% set ns.output = ns.output | combine({ key: value }) %}
+          {% endfor %}
+          {{ ns.output }}
+        load_power_forecast: |-
+          {% set ns = namespace(
+            input=history.statistics[sensors.consumed_power],
+            output={
+              now_iso: (states(sensors.consumed_power) | float(0) * 1000) | round(0)
+            }
+          ) %}
+          {% for load in ns.input %}
+            {% set load_start = load.start | as_datetime | as_local + timedelta(days=load_history_days_ago) %}
+            {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}
+            {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}
+          {% endfor %}
+          {{ ns.output }}
+    alias: Calculate payload
+  - action: rest_command.emhass_naive_mpc_optim
+    metadata: {}
+    data:
+      payload: &#34;{{ combine(common, payload) | to_json(pretty_print=true) }}&#34;
+    alias: Run EMHASS
+  - variables:
+      payload:
+        custom_pv_forecast_id:
+          entity_id: sensor.{{ sensor_prefix }}pv_power
+          unit_of_measurement: W
+          device_class: power
+          friendly_name: &#34;{{ sensor_name_prefix }}PV Power&#34;
+        custom_load_forecast_id:
+          entity_id: sensor.{{ sensor_prefix }}load_power
+          unit_of_measurement: W
+          device_class: power
+          friendly_name: &#34;{{ sensor_name_prefix }}Load Power&#34;
+        custom_hybrid_inverter_id:
+          entity_id: sensor.{{ sensor_prefix }}inverter_power
+          unit_of_measurement: W
+          device_class: power
+          friendly_name: &#34;{{ sensor_name_prefix }}Inverter Power&#34;
+        custom_batt_forecast_id:
+          entity_id: sensor.{{ sensor_prefix }}batt_power
+          unit_of_measurement: W
+          device_class: power
+          friendly_name: &#34;{{ sensor_name_prefix }}Battery Power&#34;
+        custom_grid_forecast_id:
+          entity_id: sensor.{{ sensor_prefix }}grid_power
+          unit_of_measurement: W
+          device_class: power
+          friendly_name: &#34;{{ sensor_name_prefix }}Grid Power&#34;
+        custom_batt_soc_forecast_id:
+          entity_id: sensor.{{ sensor_prefix }}batt_soc
+          unit_of_measurement: &#34;%&#34;
+          device_class: battery
+          friendly_name: &#34;{{ sensor_name_prefix }}Battery SOC&#34;
+        custom_cost_fun_id:
+          entity_id: sensor.{{ sensor_prefix }}cost_fun
+          unit_of_measurement: $
+          device_class: monetary
+          friendly_name: &#34;{{ sensor_name_prefix }}Cost Function&#34;
+        custom_unit_load_cost_id:
+          entity_id: sensor.{{ sensor_prefix }}general_price
+          unit_of_measurement: $
+          device_class: monetary
+          friendly_name: &#34;{{ sensor_name_prefix }}Buy Price&#34;
+        custom_unit_prod_price_id:
+          entity_id: sensor.{{ sensor_prefix }}feed_in_price
+          unit_of_measurement: $
+          device_class: monetary
+          friendly_name: &#34;{{ sensor_name_prefix }}Sell Price&#34;
+        custom_optim_status_id:
+          entity_id: sensor.{{ sensor_prefix }}optim_status
+          unit_of_measurement: &#34;&#34;
+          friendly_name: &#34;{{ sensor_name_prefix }}Optimisation Status&#34;
+  - action: rest_command.emhass_publish_data
+    metadata: {}
+    data:
+      payload: &#34;{{ combine(common, payload) | to_json(pretty_print=true) }}&#34;
+    alias: Publish Energy Plan to HA
+alias: Generate EMHASS Energy Plan (MPC)
+description: Runs EMHASS MPC optimizer, generating an optimal energy plan
+
+" title="Copy to clipboard" data-astro-cid-jgrc2lfe> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-jgrc2lfe> <rect x="9" y="9" width="13" height="13" rx="2" ry="2" data-astro-cid-jgrc2lfe></rect> <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" data-astro-cid-jgrc2lfe></path> </svg> <span class="copy-text" data-astro-cid-jgrc2lfe>Copy</span> <span class="copied-text" style="display: none;" data-astro-cid-jgrc2lfe>Copied!</span> </button> <pre class="astro-code dracula" style="background-color:#282A36;color:#F8F8F2; overflow-x: auto;" tabindex="0" data-astro-cid-jgrc2lfe data-language="yaml"><code><span class="line"><span style="color:#8BE9FD">sequence</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      costfun</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> profit</span></span>
+<span class="line"><span style="color:#8BE9FD">      maximum_power_from_grid</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 15000</span></span>
+<span class="line"><span style="color:#8BE9FD">      maximum_power_to_grid</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 10000</span></span>
+<span class="line"><span style="color:#8BE9FD">      battery_minimum_percent</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 10</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Configure critical settings</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      num_prediction_days</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">      optimization_time_step</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 5</span></span>
+<span class="line"><span style="color:#8BE9FD">      load_history_days_ago</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 2</span></span>
+<span class="line"><span style="color:#8BE9FD">      weight_battery_charge</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0.02</span></span>
+<span class="line"><span style="color:#8BE9FD">      weight_battery_discharge</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0.02</span></span>
+<span class="line"><span style="color:#8BE9FD">      sensor_prefix</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> mpc_</span></span>
+<span class="line"><span style="color:#8BE9FD">      sensor_name_prefix</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">MPC </span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Configure secondary settings</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      sensors</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">        energy_capacity</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_rated_energy_capacity</span></span>
+<span class="line"><span style="color:#8BE9FD">        charging_power</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_ess_rated_charging_power</span></span>
+<span class="line"><span style="color:#8BE9FD">        discharging_power</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_ess_rated_discharging_power</span></span>
+<span class="line"><span style="color:#8BE9FD">        max_inverter_power</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_max_active_power</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_soc</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_battery_state_of_charge</span></span>
+<span class="line"><span style="color:#8BE9FD">        consumed_power</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_consumed_power</span></span>
+<span class="line"><span style="color:#8BE9FD">        solar</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          current_power</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.sigen_plant_pv_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          forecasts</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#FF79C6">            -</span><span style="color:#F1FA8C"> sensor.solcast_pv_forecast_forecast_today</span></span>
+<span class="line"><span style="color:#FF79C6">            -</span><span style="color:#F1FA8C"> sensor.solcast_pv_forecast_forecast_tomorrow</span></span>
+<span class="line"><span style="color:#FF79C6">            -</span><span style="color:#F1FA8C"> sensor.solcast_pv_forecast_forecast_day_3</span></span>
+<span class="line"><span style="color:#8BE9FD">        amber</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          general_price</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">          general_forecast</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_general_forecast</span></span>
+<span class="line"><span style="color:#8BE9FD">          feed_in_price</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">          feed_in_forecast</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.home_feed_in_forecast</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Configure sensor entities</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      start_time</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">        {% set delta = timedelta(days=load_history_days_ago) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">        {{ (now() - delta).isoformat() }}</span></span>
+<span class="line"><span style="color:#8BE9FD">      end_time</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">        {% set delta = timedelta(days=load_history_days_ago) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">        {% set duration = timedelta(days=num_prediction_days) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">        {{ (now() - delta + duration).isoformat() }}</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Calculate variables</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> recorder.get_statistics</span></span>
+<span class="line"><span style="color:#8BE9FD">    data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      start_time</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ start_time }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      end_time</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ end_time }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      statistic_ids</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensors.consumed_power }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      period</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> hour</span></span>
+<span class="line"><span style="color:#8BE9FD">      types</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> mean</span></span>
+<span class="line"><span style="color:#8BE9FD">    response_variable</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> history</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Fetch load history</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      num_forecasts</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (60 / optimization_time_step * 24 * num_prediction_days) | int }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      soc_init</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (states(sensors.battery_soc) | float(0) / 100) | round(3) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      soc_final</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ battery_minimum_percent / 100 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      now_iso</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ now().replace(microsecond=0).isoformat() }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      max_inverter_power</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (states(sensors.max_inverter_power) | float(0) * 1000) | round }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">      common</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">        costfun</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ costfun }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        prediction_horizon</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ num_forecasts }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        optimization_time_step</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ optimization_time_step }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        delta_forecast_daily</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ num_prediction_days }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        set_use_pv</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">        set_use_battery</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">        inverter_is_hybrid</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> true</span></span>
+<span class="line"><span style="color:#8BE9FD">        number_of_deferrable_loads</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 0</span></span>
+<span class="line"><span style="color:#8BE9FD">        set_nodischarge_to_grid</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> false</span></span>
+<span class="line"><span style="color:#8BE9FD">      payload</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">        weight_battery_charge</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ weight_battery_charge }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        weight_battery_discharge</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ weight_battery_discharge }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_minimum_state_of_charge</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ battery_minimum_percent / 100 }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_maximum_state_of_charge</span><span style="color:#FF79C6">:</span><span style="color:#BD93F9"> 1</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_nominal_energy_capacity</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (states(sensors.energy_capacity) | float(0) * 1000) | round }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_charge_power_max</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (states(sensors.charging_power) | float(0) * 1000) | round }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        battery_discharge_power_max</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ (states(sensors.discharging_power) | float(0) * 1000) | round }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        maximum_power_from_grid</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ maximum_power_from_grid }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        maximum_power_to_grid</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ maximum_power_to_grid }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        inverter_ac_output_max</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_inverter_power }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        inverter_ac_input_max</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ max_inverter_power }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        soc_init</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ soc_init }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        soc_final</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ soc_final }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        load_cost_forecast</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% set ns = namespace(</span></span>
+<span class="line"><span style="color:#F1FA8C">            input=(</span></span>
+<span class="line"><span style="color:#F1FA8C">                state_attr(sensors.amber.general_forecast, 'forecasts') | list</span></span>
+<span class="line"><span style="color:#F1FA8C">            ) | selectattr('per_kwh', 'is_number') | list,</span></span>
+<span class="line"><span style="color:#F1FA8C">            output={</span></span>
+<span class="line"><span style="color:#F1FA8C">              now_iso: states(sensors.amber.general_price) | float(0)</span></span>
+<span class="line"><span style="color:#F1FA8C">            }</span></span>
+<span class="line"><span style="color:#F1FA8C">          ) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% for day in range(num_prediction_days) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% for forecast in ns.input %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set start = forecast.start_time | as_datetime | as_local + timedelta(days=day) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set price = forecast.per_kwh | float(0) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set ns.output = ns.output | combine({ start.isoformat(): price }) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {{ ns.output }}</span></span>
+<span class="line"><span style="color:#8BE9FD">        prod_price_forecast</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% set ns = namespace(</span></span>
+<span class="line"><span style="color:#F1FA8C">            input=(</span></span>
+<span class="line"><span style="color:#F1FA8C">                state_attr(sensors.amber.feed_in_forecast, 'forecasts') | list</span></span>
+<span class="line"><span style="color:#F1FA8C">            ) | selectattr('per_kwh', 'is_number') | list,</span></span>
+<span class="line"><span style="color:#F1FA8C">            output={</span></span>
+<span class="line"><span style="color:#F1FA8C">              now_iso: states(sensors.amber.feed_in_price) | float(0)</span></span>
+<span class="line"><span style="color:#F1FA8C">            }</span></span>
+<span class="line"><span style="color:#F1FA8C">          ) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% for day in range(num_prediction_days) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% for forecast in ns.input %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set start = forecast.start_time | as_datetime | as_local + timedelta(days=day) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set price = forecast.per_kwh | float(0) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">              {% set ns.output = ns.output | combine({ start.isoformat(): price }) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {{ ns.output }}</span></span>
+<span class="line"><span style="color:#8BE9FD">        pv_power_forecast</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% set ns = namespace(</span></span>
+<span class="line"><span style="color:#F1FA8C">            input=sensors.solar.forecasts</span></span>
+<span class="line"><span style="color:#F1FA8C">              | map('state_attr', 'detailedForecast')</span></span>
+<span class="line"><span style="color:#F1FA8C">              | sum(start=[])</span></span>
+<span class="line"><span style="color:#F1FA8C">              | selectattr('period_start', '>', now())</span></span>
+<span class="line"><span style="color:#F1FA8C">              | selectattr('period_start', '&#x3C;=', now() + timedelta(days=num_prediction_days)),</span></span>
+<span class="line"><span style="color:#F1FA8C">            output={</span></span>
+<span class="line"><span style="color:#F1FA8C">              now_iso: (states(sensors.solar.current_power) | float(0) * 1000) | round</span></span>
+<span class="line"><span style="color:#F1FA8C">            }</span></span>
+<span class="line"><span style="color:#F1FA8C">          ) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% for solar in ns.input %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set key = (solar.period_start | as_datetime | as_local).isoformat() %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set value = (solar.pv_estimate * 1000) | round %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set ns.output = ns.output | combine({ key: value }) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {{ ns.output }}</span></span>
+<span class="line"><span style="color:#8BE9FD">        load_power_forecast</span><span style="color:#FF79C6">:</span><span style="color:#FF79C6"> |-</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% set ns = namespace(</span></span>
+<span class="line"><span style="color:#F1FA8C">            input=history.statistics[sensors.consumed_power],</span></span>
+<span class="line"><span style="color:#F1FA8C">            output={</span></span>
+<span class="line"><span style="color:#F1FA8C">              now_iso: (states(sensors.consumed_power) | float(0) * 1000) | round(0)</span></span>
+<span class="line"><span style="color:#F1FA8C">            }</span></span>
+<span class="line"><span style="color:#F1FA8C">          ) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% for load in ns.input %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set load_start = load.start | as_datetime | as_local + timedelta(days=load_history_days_ago) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">            {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {% endfor %}</span></span>
+<span class="line"><span style="color:#F1FA8C">          {{ ns.output }}</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Calculate payload</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> rest_command.emhass_naive_mpc_optim</span></span>
+<span class="line"><span style="color:#8BE9FD">    metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">    data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      payload</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ combine(common, payload) | to_json(pretty_print=true) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Run EMHASS</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> variables</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      payload</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_pv_forecast_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}pv_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> W</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}PV Power</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_load_forecast_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}load_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> W</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Load Power</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_hybrid_inverter_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}inverter_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> W</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Inverter Power</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_batt_forecast_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}batt_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> W</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Battery Power</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_grid_forecast_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}grid_power</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> W</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> power</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Grid Power</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_batt_soc_forecast_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}batt_soc</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">%</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> battery</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Battery SOC</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_cost_fun_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}cost_fun</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> $</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> monetary</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Cost Function</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_unit_load_cost_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}general_price</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> $</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> monetary</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Buy Price</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_unit_prod_price_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}feed_in_price</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> $</span></span>
+<span class="line"><span style="color:#8BE9FD">          device_class</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> monetary</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Sell Price</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">        custom_optim_status_id</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">          entity_id</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> sensor.{{ sensor_prefix }}optim_status</span></span>
+<span class="line"><span style="color:#8BE9FD">          unit_of_measurement</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> ""</span></span>
+<span class="line"><span style="color:#8BE9FD">          friendly_name</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ sensor_name_prefix }}Optimisation Status</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#FF79C6">  -</span><span style="color:#8BE9FD"> action</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> rest_command.emhass_publish_data</span></span>
+<span class="line"><span style="color:#8BE9FD">    metadata</span><span style="color:#FF79C6">:</span><span style="color:#F8F8F2"> {}</span></span>
+<span class="line"><span style="color:#8BE9FD">    data</span><span style="color:#FF79C6">:</span></span>
+<span class="line"><span style="color:#8BE9FD">      payload</span><span style="color:#FF79C6">:</span><span style="color:#E9F284"> "</span><span style="color:#F1FA8C">{{ combine(common, payload) | to_json(pretty_print=true) }}</span><span style="color:#E9F284">"</span></span>
+<span class="line"><span style="color:#8BE9FD">    alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Publish Energy Plan to HA</span></span>
+<span class="line"><span style="color:#8BE9FD">alias</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Generate EMHASS Energy Plan (MPC)</span></span>
+<span class="line"><span style="color:#8BE9FD">description</span><span style="color:#FF79C6">:</span><span style="color:#F1FA8C"> Runs EMHASS MPC optimizer, generating an optimal energy plan</span></span>
+<span class="line"></span></code></pre> </div>  <script type="module">document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".copy-button").forEach(e=>{e.addEventListener("click",async()=>{const c=e.getAttribute("data-code"),t=e.querySelector(".copy-text"),o=e.querySelector(".copied-text");if(c)try{await navigator.clipboard.writeText(c),t&&o&&(t.style.display="none",o.style.display="inline"),e.classList.add("copied"),setTimeout(()=>{t&&o&&(t.style.display="inline",o.style.display="none"),e.classList.remove("copied")},2e3)}catch(i){console.error("Failed to copy code:",i)}})})});</script>
+<p>If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check
+the output in the EMHASS webview. We will also be adding our own output dashboard shortly.</p>
+<p>You’ll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
+new automation:</p>
+<pre class="astro-code github-dark" style="background-color:#24292e;color:#e1e4e8;overflow-x:auto" tabindex="0" data-language="yaml"><code><span class="line"><span style="color:#85E89D">alias</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">&quot;Generate EMHASS energy plan&quot;</span></span>
+<span class="line"><span style="color:#85E89D">description</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">&quot;Automatically generate EMHASS energy plan when prices change&quot;</span></span>
+<span class="line"><span style="color:#85E89D">triggers</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">  - </span><span style="color:#85E89D">trigger</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">state</span></span>
+<span class="line"><span style="color:#85E89D">    entity_id</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">      - </span><span style="color:#9ECBFF">sensor.home_general_price</span></span>
+<span class="line"><span style="color:#E1E4E8">      - </span><span style="color:#9ECBFF">sensor.home_feed_in_price</span></span>
+<span class="line"><span style="color:#85E89D">    enabled</span><span style="color:#E1E4E8">: </span><span style="color:#79B8FF">true</span></span>
+<span class="line"><span style="color:#85E89D">conditions</span><span style="color:#E1E4E8">: []</span></span>
+<span class="line"><span style="color:#85E89D">actions</span><span style="color:#E1E4E8">:</span></span>
+<span class="line"><span style="color:#E1E4E8">  - </span><span style="color:#85E89D">action</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">script.generate_emhass_energy_plan_mpc</span></span>
+<span class="line"><span style="color:#85E89D">    metadata</span><span style="color:#E1E4E8">: {}</span></span>
+<span class="line"><span style="color:#85E89D">    data</span><span style="color:#E1E4E8">: {}</span></span>
+<span class="line"><span style="color:#85E89D">mode</span><span style="color:#E1E4E8">: </span><span style="color:#9ECBFF">single</span></span></code></pre>
+<p>This will run every time the prices change.</p>
+<p>Note: On my Intel NUC Home Assistant server, this script takes a couple of seconds to run. If you are running lower-end
+hardware, you may want to either increase the optimization time step or reduce the running frequency.</p>
+<h2 id="up-next">Up Next</h2>
+<p>→ <a href="/dashboard">Dashboard Setup</a></p> </main> </body></html>
