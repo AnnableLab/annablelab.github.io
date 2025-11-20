@@ -49,8 +49,7 @@ the output in the EMHASS webview. We will also be adding our own output dashboar
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
 new automation:
 
-```yaml
-alias: "Generate EMHASS energy plan"
+export const automationYaml = `alias: "Generate EMHASS energy plan"
 description: "Automatically generate EMHASS energy plan when prices change"
 triggers:
   - trigger: state
@@ -63,8 +62,9 @@ actions:
   - action: script.generate_emhass_energy_plan_mpc
     metadata: {}
     data: {}
-mode: single
-```
+mode: single`;
+
+<CodeBlock code={automationYaml} lang="yaml" />
 
 This will run every time the prices change.
 
