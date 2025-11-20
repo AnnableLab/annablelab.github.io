@@ -8,6 +8,15 @@ export default defineConfig({
   integrations: [mdx(), sitemap()],
   build: {
     format: 'file'
+  },
+  redirects: {
+    '/pages/architecture': '/architecture',
+    '/pages/automation': '/automation',
+    '/pages/conclusion': '/conclusion',
+    '/pages/dashboard': '/dashboard',
+    '/pages/emhass': '/emhass',
+    '/pages/prerequisites': '/prerequisites',
+    '/pages/setup': '/setup',
   }
 });
 
