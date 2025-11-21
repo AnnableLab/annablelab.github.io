@@ -1,14 +1,20 @@
 ---
 import { SEO } from "astro-seo";
 
-const { title, description } = Astro.props;
+const { title, description, frontmatter } = Astro.props;
 const siteTitle = "Sigenergy with Home Assistant and EMHASS";
 const siteDescription =
   "Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.";
 
-const pageTitle = title ? `${title} | ${siteTitle}` : siteTitle;
-const pageDescription = description || siteDescription;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// MDX pages pass title via frontmatter, regular pages pass it directly
+// Skip the prefix for the home page
+const isHomePage = Astro.url.pathname === '/';
+const pageTitle = (frontmatter?.title || title) && !isHomePage
+  ? `${frontmatter?.title || title} | ${siteTitle}` 
+  : siteTitle;
+const pageDescription = frontmatter?.description || description || siteDescription;
 
 const navItems = [
   { title: "Home", url: "/" },
