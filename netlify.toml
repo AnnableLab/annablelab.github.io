@@ -1,17 +1,21 @@
 [build]
-  command = "npm run build"
+  # Default build command includes typecheck but allows build to continue if it fails
+  # This ensures type errors are visible in logs but don't block deploys
+  command = "npm run ts:check || true && npm run build"
   publish = "dist"
 
 [build.environment]
   NODE_VERSION = "20"
 
 # Enable automatic deploy previews for pull requests
+# Run typechecking but allow build to continue if it fails
 [context.deploy-preview]
-  command = "npm run build"
+  command = "npm run ts:check || true && npm run build"
 
 # Production context (main branch)
+# Typecheck must pass for production deploys
 [context.production]
-  command = "npm run build"
+  command = "npm run ts:check && npm run build"
 
 # Optional: Configure headers for better caching
 [[headers]]
