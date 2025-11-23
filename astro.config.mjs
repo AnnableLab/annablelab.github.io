@@ -2,6 +2,7 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import sitemap from "@astrojs/sitemap";
 import robotsTxt from "astro-robots-txt";
+import rehypeExternalLinks from "rehype-external-links";
 
 // https://astro.build/config
 export default defineConfig({
@@ -74,6 +75,15 @@ export default defineConfig({
     shikiConfig: {
       theme: "github-dark-default",
     },
+    rehypePlugins: [
+      [
+        rehypeExternalLinks,
+        {
+          target: "_blank",
+          rel: ["noopener", "noreferrer"],
+        },
+      ],
+    ],
   },
   redirects: {
     "/pages/architecture": "/architecture",
