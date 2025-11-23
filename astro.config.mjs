@@ -14,6 +14,7 @@ export default defineConfig({
       title: "Sigenergy with Home Assistant and EMHASS",
       description:
         "Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.",
+      tableOfContents: false,
       head: [
         {
           tag: 'script',
