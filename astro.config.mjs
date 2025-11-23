@@ -1,10 +1,14 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import sitemap from "@astrojs/sitemap";
+import robotsTxt from "astro-robots-txt";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://sigenergy.annable.me",
   integrations: [
+    sitemap(),
+    robotsTxt(),
     starlight({
       title: "Sigenergy with Home Assistant and EMHASS",
       description:
