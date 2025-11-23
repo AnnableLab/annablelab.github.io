@@ -1,28 +1,29 @@
 import { defineConfig } from "astro/config";
-import sitemap from "@astrojs/sitemap";
-import mdx from "@astrojs/mdx";
-import robotsTxt from "astro-robots-txt";
+import starlight from "@astrojs/starlight";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://sigenergy.annable.me",
-  integrations: [mdx(), sitemap(), robotsTxt()],
-  compressHTML: false,
-  build: {
-    format: "file",
-  },
-  markdown: {
-    shikiConfig: {
-      theme: "github-dark-default",
-    },
-  },
-  redirects: {
-    "/pages/architecture": "/architecture",
-    "/pages/automation": "/automation",
-    "/pages/conclusion": "/conclusion",
-    "/pages/dashboard": "/dashboard",
-    "/pages/emhass": "/emhass",
-    "/pages/prerequisites": "/prerequisites",
-    "/pages/setup": "/setup",
-  },
+  integrations: [
+    starlight({
+      title: "Sigenergy with Home Assistant and EMHASS",
+      description:
+        "Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.",
+      sidebar: [
+        {
+          label: "Guide",
+          items: [
+            { label: "Home", link: "/" },
+            { label: "Architecture", link: "/architecture" },
+            { label: "Prerequisites", link: "/prerequisites" },
+            { label: "EMHASS Setup", link: "/setup" },
+            { label: "Running EMHASS", link: "/emhass" },
+            { label: "Dashboard", link: "/dashboard" },
+            { label: "Battery Automation", link: "/automation" },
+            { label: "Conclusion", link: "/conclusion" },
+          ],
+        },
+      ],
+    }),
+  ],
 });

@@ -28,7 +28,7 @@ const navItems = [
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <SEO
       title={pageTitle}
@@ -67,29 +67,26 @@ const navItems = [
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/assets/css/style.css" />
   </head>
   <body>
-    <header class="site-header">
-      <div class="wrap">
-        <h1 class="site-title">
-          <a href="/">{siteTitle}</a>
-        </h1>
-        <p class="site-description">{siteDescription}</p>
-        <nav class="site-nav">
-          <ul>
-            {
-              navItems.map((item) => (
-                <li>
-                  <a href={item.url}>{item.title}</a>
-                </li>
-              ))
-            }
-          </ul>
-        </nav>
-      </div>
+    <header>
+      <h1>
+        <a href="/">{siteTitle}</a>
+      </h1>
+      <p>{siteDescription}</p>
+      <nav>
+        <ul>
+          {
+            navItems.map((item) => (
+              <li>
+                <a href={item.url}>{item.title}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
     </header>
-    <main class="wrap content">
+    <main>
       <slot />
     </main>
   </body>
