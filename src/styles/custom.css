@@ -4,3 +4,11 @@
   --sl-content-width: 980px;
 }
 
+/* Dark theme */
+[data-theme="dark"] {
+  --sl-color-bg: #0b1220;
+  --sl-color-bg-nav: #0b1220;
+  --sl-color-bg-sidebar: #0f172a;
+  --sl-color-text: #e5e7eb;
+  --sl-color-text-accent: #38bdf8;
+}
