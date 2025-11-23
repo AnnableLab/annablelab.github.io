@@ -7,12 +7,14 @@ on:
       - 'src/includes/**/*.yaml'
       - 'tests/**'
       - 'pyproject.toml'
+      - 'run_tests.py'
   pull_request:
     branches: [ main ]
     paths:
       - 'src/includes/**/*.yaml'
       - 'tests/**'
       - 'pyproject.toml'
+      - 'run_tests.py'
   workflow_dispatch:
 
 jobs:
@@ -32,15 +34,12 @@ jobs:
       run: uv python install 3.12
     
     - name: Run tests
-      run: |
-        uv run run_tests.py
+      run: uv run run_tests.py
     
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: |
-          .pytest_cache/
-          htmlcov/
+        path: .pytest_cache/
 

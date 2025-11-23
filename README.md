@@ -1,5 +1,7 @@
 # Sigenergy with Home Assistant and EMHASS + Amber Electric
 
+[![Test YAML Files](https://github.com/USERNAME/REPO/actions/workflows/test-yaml.yml/badge.svg)](https://github.com/USERNAME/REPO/actions/workflows/test-yaml.yml)
+
 This guide is automatically published to: [https://sigenergy.annable.me](https://sigenergy.annable.me)
 
 ## Local development
