@@ -65,4 +65,19 @@ export default defineConfig({
       ],
     }),
   ],
+  compressHTML: false,
+  markdown: {
+    shikiConfig: {
+      theme: "github-dark-default",
+    },
+  },
+  redirects: {
+    "/pages/architecture": "/architecture",
+    "/pages/automation": "/automation",
+    "/pages/conclusion": "/conclusion",
+    "/pages/dashboard": "/dashboard",
+    "/pages/emhass": "/emhass",
+    "/pages/prerequisites": "/prerequisites",
+    "/pages/setup": "/setup",
+  },
 });
