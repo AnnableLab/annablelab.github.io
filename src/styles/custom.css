@@ -4,6 +4,10 @@
   --sl-content-width: 980px;
 }
 
+site-search > button {
+  max-width: 980px !important
+}
+
 /* Dark theme */
 [data-theme="dark"] {
   --sl-color-bg: #0b1220;
