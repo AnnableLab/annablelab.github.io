@@ -4,7 +4,7 @@ import { Code } from "astro:components";
 
 interface Props {
   code: string;
-  lang?: CodeLanguage;
+  lang?: string;
 }
 
 const { code, lang = "yaml" as CodeLanguage } = Astro.props;
