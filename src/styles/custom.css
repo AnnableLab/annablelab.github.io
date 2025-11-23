@@ -1,0 +1,6 @@
+/* Make content wider to match previous layout (980px) */
+/* Using Starlight's official CSS variable */
+:root {
+  --sl-content-width: 980px;
+}
+
