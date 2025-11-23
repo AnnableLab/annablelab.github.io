@@ -7,8 +7,6 @@ import CodeBlock from "../../components/CodeBlock.astro";
 import batteryAutomationYaml from "../../includes/battery_automation.yaml?raw";
 import curtailmentYaml from "../../includes/curtailment.yaml?raw";
 
-# Automated Battery Control
-
 EMHASS by itself just creates the energy plan, but it won't actually know how to execute upon it. In order to execute
 the plan, we will need an automation.
 
@@ -44,8 +42,4 @@ negative feed-in price and will also prevent using solar when there is a negativ
 money drawing from the grid instead).
 
 <CodeBlock lang="yaml" code={curtailmentYaml} />
-
-## Up Next
-
-→ [Conclusion](/conclusion)
 
