@@ -25,7 +25,7 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       sidebar: [
         {
-          label: "Guide",
+          label: "EMHASS Guide",
           items: [
             { label: "Home", link: "/" },
             { label: "Architecture", link: "/architecture" },
@@ -35,6 +35,12 @@ export default defineConfig({
             { label: "Dashboard", link: "/dashboard" },
             { label: "Battery Automation", link: "/automation" },
             { label: "Conclusion", link: "/conclusion" },
+          ],
+        },
+        {
+          label: "Debugging",
+          items: [
+            { label: "Trace Downloading", link: "/trace" },
           ],
         },
       ],
