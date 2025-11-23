@@ -17,8 +17,9 @@
   "dependencies": {
     "@astrojs/mdx": "^4.3.11",
     "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/starlight": "^0.36.2",
     "astro": "^5.15.9",
     "astro-robots-txt": "^1.0.0",
-    "astro-seo": "^0.8.4"
+    "rehype-external-links": "^3.0.0"
   }
 }

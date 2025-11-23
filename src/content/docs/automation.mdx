@@ -1,13 +1,11 @@
 ---
-layout: ../layouts/BaseLayout.astro
 title: Automation & Scheduling
+description: Automate battery control based on the EMHASS energy plan and handle negative pricing.
 ---
 
-import CodeBlock from "../components/CodeBlock.astro";
-import batteryAutomationYaml from "../includes/battery_automation.yaml?raw";
-import curtailmentYaml from "../includes/curtailment.yaml?raw";
-
-# Automated Battery Control
+import CodeBlock from "../../components/CodeBlock.astro";
+import batteryAutomationYaml from "../../includes/battery_automation.yaml?raw";
+import curtailmentYaml from "../../includes/curtailment.yaml?raw";
 
 EMHASS by itself just creates the energy plan, but it won't actually know how to execute upon it. In order to execute
 the plan, we will need an automation.
@@ -45,6 +43,3 @@ money drawing from the grid instead).
 
 <CodeBlock lang="yaml" code={curtailmentYaml} />
 
-## Up Next
-
-→ [Conclusion](/conclusion)
