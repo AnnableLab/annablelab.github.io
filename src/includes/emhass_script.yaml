@@ -8,7 +8,6 @@ sequence:
   - variables:
       num_prediction_days: 2
       optimization_time_step: 5
-      load_history_days_ago: 2
       weight_battery_charge: 0.02
       weight_battery_discharge: 0.02
       sensor_prefix: mpc_
@@ -34,19 +33,10 @@ sequence:
           feed_in_price: sensor.home_feed_in_price
           feed_in_forecast: sensor.home_feed_in_forecast
     alias: Configure sensor entities
-  - variables:
-      start_time: |-
-        {% set delta = timedelta(days=load_history_days_ago) %}
-        {{ (now() - delta).isoformat() }}
-      end_time: |-
-        {% set delta = timedelta(days=load_history_days_ago) %}
-        {% set duration = timedelta(days=num_prediction_days) %}
-        {{ (now() - delta + duration).isoformat() }}
-    alias: Calculate variables
   - action: recorder.get_statistics
     data:
-      start_time: "{{ start_time }}"
-      end_time: "{{ end_time }}"
+      start_time: "{{ (now() - timedelta(days=1)).isoformat() }}"
+      end_time: "{{ now().isoformat() }}"
       statistic_ids: "{{ sensors.consumed_power }}"
       period: hour
       types: mean
@@ -140,10 +130,12 @@ sequence:
               now_iso: (states(sensors.consumed_power) | float(0) * 1000) | round(0)
             }
           ) %}
-          {% for load in ns.input %}
-            {% set load_start = load.start | as_datetime | as_local + timedelta(days=load_history_days_ago) %}
-            {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}
-            {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}
+          {% for day in range(num_prediction_days) %}
+            {% for load in ns.input %}
+              {% set load_start = load.start | as_datetime | as_local + timedelta(days=day + 1) %}
+              {% set load_value_watts = (load.mean | float(0) * 1000) | round(0) %}
+              {% set ns.output = ns.output | combine({ load_start.isoformat(): load_value_watts }) %}
+            {% endfor %}
           {% endfor %}
           {{ ns.output }}
     alias: Calculate payload
