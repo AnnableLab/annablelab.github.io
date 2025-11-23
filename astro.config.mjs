@@ -9,6 +9,19 @@ export default defineConfig({
       title: "Sigenergy with Home Assistant and EMHASS",
       description:
         "Step-by-step guide automating a Sigenergy system with Home Assistant using EMHASS and Amber Electric in Australia.",
+      head: [
+        {
+          tag: 'script',
+          attrs: {},
+          content: `
+            // Set dark mode as default if no preference is stored
+            if (!localStorage.getItem('starlight-theme')) {
+              localStorage.setItem('starlight-theme', 'dark');
+              document.documentElement.dataset.theme = 'dark';
+            }
+          `,
+        },
+      ],
       sidebar: [
         {
           label: "Guide",
