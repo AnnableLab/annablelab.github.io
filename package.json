@@ -7,12 +7,15 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "ts:check": "astro check",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.5",
     "prettier": "^3.6.2",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier-plugin-astro": "^0.14.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.11",

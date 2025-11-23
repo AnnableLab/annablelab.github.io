@@ -1,12 +1,13 @@
 ---
+import type { CodeLanguage } from "astro";
 import { Code } from "astro:components";
 
 interface Props {
   code: string;
-  lang?: string;
+  lang?: CodeLanguage;
 }
 
-const { code, lang = "yaml" } = Astro.props;
+const { code, lang = "yaml" as CodeLanguage } = Astro.props;
 ---
 
 <div class="code-block-wrapper">
@@ -89,8 +90,8 @@ const { code, lang = "yaml" } = Astro.props;
     copyButtons.forEach((button) => {
       button.addEventListener("click", async () => {
         const code = button.getAttribute("data-code");
-        const copyText = button.querySelector(".copy-text");
-        const copiedText = button.querySelector(".copied-text");
+        const copyText = button.querySelector(".copy-text") as HTMLElement;
+        const copiedText = button.querySelector(".copied-text") as HTMLElement;
 
         if (!code) return;
 
