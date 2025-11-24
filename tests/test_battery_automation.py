@@ -22,7 +22,7 @@ def load_yaml():
     return _load
 
 @pytest.mark.asyncio
-async def test_battery_automation_logic(hass, load_yaml):
+async def test_battery_automation_logic(hass: HomeAssistant, load_yaml):
     """Test the logic flow of the battery automation."""
     
     # 1. Load automation config
