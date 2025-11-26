@@ -17,14 +17,14 @@ export default defineConfig({
       tableOfContents: false,
       head: [
         {
-          tag: 'script',
+          tag: "script",
           attrs: {
             async: true,
-            src: 'https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3',
+            src: "https://www.googletagmanager.com/gtag/js?id=G-HNTKBKHJY3",
           },
         },
         {
-          tag: 'script',
+          tag: "script",
           attrs: {},
           content: `
             window.dataLayer = window.dataLayer || [];
@@ -36,7 +36,7 @@ export default defineConfig({
           `,
         },
         {
-          tag: 'script',
+          tag: "script",
           attrs: {},
           content: `
             // Set dark mode as default if no preference is stored
@@ -47,7 +47,7 @@ export default defineConfig({
           `,
         },
       ],
-      customCss: ['./src/styles/custom.css'],
+      customCss: ["./src/styles/custom.css"],
       sidebar: [
         {
           label: "EMHASS Guide",
@@ -64,9 +64,7 @@ export default defineConfig({
         },
         {
           label: "Debugging",
-          items: [
-            { label: "Trace Downloading", link: "/trace" },
-          ],
+          items: [{ label: "Trace Downloading", link: "/trace" }],
         },
       ],
     }),

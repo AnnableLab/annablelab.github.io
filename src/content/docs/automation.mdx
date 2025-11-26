@@ -3,9 +3,9 @@ title: Automation & Scheduling
 description: Automate battery control based on the EMHASS energy plan and handle negative pricing.
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "../../components/CodeBlock.astro";
-import { applyPatch } from 'diff';
+import { applyPatch } from "diff";
 import batteryAutomationYaml from "../../includes/battery_automation.yaml?raw";
 import curtailmentYaml from "../../includes/curtailment.yaml?raw";
 import curtailmentPatch from "../../includes/curtailment.patch?raw";
@@ -54,4 +54,3 @@ money drawing from the grid instead).
     <CodeBlock lang="yaml" code={curtailmentYamlPatched} />
   </TabItem>
 </Tabs>
-
