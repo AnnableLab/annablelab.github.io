@@ -5,7 +5,7 @@
 }
 
 site-search > button {
-  max-width: 980px !important
+  max-width: 980px !important;
 }
 
 /* Dark theme */
@@ -17,6 +17,7 @@ site-search > button {
   --sl-color-text-accent: #38bdf8;
 }
 
-starlight-theme-select, .social-icons {
+starlight-theme-select,
+.social-icons {
   display: none;
 }

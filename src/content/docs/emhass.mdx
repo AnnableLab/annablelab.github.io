@@ -3,9 +3,17 @@ title: Running EMHASS
 description: Create scripts and automations to run EMHASS and generate your energy optimization plan.
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 import CodeBlock from "../../components/CodeBlock.astro";
-import emhassScriptYaml from "../../includes/emhass_script.yaml?raw";
-import emhassAutomationYaml from "../../includes/emhass_automation.yaml?raw";
+import { applyPatch } from "diff";
+import emhassAmberScriptYaml from "../../includes/emhass_script.yaml?raw";
+import emhassA2MScriptPatchYaml from "../../includes/emhass_script.patch?raw";
+import emhassAmberAutomationYaml from "../../includes/emhass_automation.yaml?raw";
+import emhassA2MAutomationPatchYaml from "../../includes/emhass_automation.patch?raw";
+
+export const emhassA2MScriptYaml = applyPatch(emhassAmberScriptYaml, emhassA2MScriptPatchYaml) || emhassAutomationYaml;
+export const emhassA2MAutomationYaml =
+  applyPatch(emhassAmberAutomationYaml, emhassA2MAutomationPatchYaml) || emhassA2MScriptPatchYaml;
 
 To run EMHASS, we want to execute the rest commands we setup earlier with all the parameters they need. In this guide we
 will use scripts.
@@ -40,7 +48,14 @@ The critical variables to configure are at the very top.
 4. `battery_minimum_percent` — what percentage (0-100) of your battery you always want to keep as a minimum (e.g. for
    blackout protection).
 
-<CodeBlock lang="yaml" code={emhassScriptYaml} />
+<Tabs>
+  <TabItem label="Amber Integration">
+    <CodeBlock lang="yaml" code={emhassAmberScriptYaml} />
+  </TabItem>
+  <TabItem label="Amber2MQTT">
+    <CodeBlock lang="yaml" code={emhassA2MScriptYaml} />
+  </TabItem>
+</Tabs>
 
 If you run this script, EMHASS will produce a plan for the day. You should be able to manually run the script and check
 the output in the EMHASS webview. We will also be adding our own output dashboard shortly.
@@ -48,10 +63,16 @@ the output in the EMHASS webview. We will also be adding our own output dashboar
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
 new automation:
 
-<CodeBlock lang="yaml" code={emhassAutomationYaml} />
+<Tabs>
+  <TabItem label="Amber Integration">
+    <CodeBlock lang="yaml" code={emhassAmberAutomationYaml} />
+  </TabItem>
+  <TabItem label="Amber2MQTT">
+    <CodeBlock lang="yaml" code={emhassA2MAutomationYaml} />
+  </TabItem>
+</Tabs>
 
 This will run every time the prices change.
 
 Note: On my Intel NUC Home Assistant server, this script takes a couple of seconds to run. If you are running lower-end
 hardware, you may want to either increase the optimization time step or reduce the running frequency.
-
