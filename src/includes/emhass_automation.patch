@@ -1,0 +1,8 @@
+--- src/includes/emhass_automation.yaml
++++ src/includes/emhass_automation.yaml
+@@ -1,4 +1,4 @@
+-alias: "Generate EMHASS energy plan"
++alias: "Generate EMHASS energy plan (Advanced)"
+ description: "Automatically generate EMHASS energy plan when prices change"
+ triggers:
+   - trigger: state
