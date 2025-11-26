@@ -3,6 +3,7 @@ title: Running EMHASS
 description: Create scripts and automations to run EMHASS and generate your energy optimization plan.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 import CodeBlock from "../../components/CodeBlock.astro";
 import emhassScriptYaml from "../../includes/emhass_script.yaml?raw";
 import emhassAutomationYaml from "../../includes/emhass_automation.yaml?raw";
@@ -48,7 +49,14 @@ the output in the EMHASS webview. We will also be adding our own output dashboar
 You'll want to be running this script regularly as forecasts change throughout the day, so the next step is to setup a
 new automation:
 
-<CodeBlock lang="yaml" code={emhassAutomationYaml} />
+<Tabs>
+  <TabItem label="Amber Integration">
+    <CodeBlock lang="yaml" code={emhassAutomationYaml} />
+  </TabItem>
+  <TabItem label="Amber2MQTT">
+    <CodeBlock lang="yaml" code={emhassScriptYaml} />
+  </TabItem>
+</Tabs>
 
 This will run every time the prices change.
 
